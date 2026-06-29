@@ -5876,7 +5876,7 @@ function copyInviteCard() {
   var priceStr = d ? d.price : '¥35';
   var seatsStr = d ? d.seats : '剩2座';
   var user = getSession();
-  var baseUrl = (window.location.origin && window.location.origin !== 'null') ? window.location.origin + '/index.html' : 'https://a6867d7b196a4ba3a7a3d9d09f44801a.app.codebuddy.work/index.html';
+  var baseUrl = (window.location.origin && window.location.origin !== 'null') ? window.location.origin + '/index.html' : 'https://zmx-i.github.io/milanxiaotu3/index.html';
   var shareUrl = baseUrl + '#carpool?from=' + encodeURIComponent(fromName) + '&to=' + encodeURIComponent(toName) + '&time=' + encodeURIComponent(timeStr) + '&price=' + encodeURIComponent(priceStr);
   var text = '【民兰校途】' + (user ? user.name || '同学' : '同学') + '邀请你一起拼车！\n\n📍 ' + fromName + ' → ' + toName + '\n🕐 ' + timeStr + '\n💰 ' + priceStr + '\n👥 ' + seatsStr + '\n\n点击链接加入：' + shareUrl;
 
@@ -5943,7 +5943,7 @@ function shareInviteCard() {
   var priceStr = d ? d.price : '¥35';
   var seatsStr = d ? d.seats : '剩2座';
   var user = getSession();
-  var baseUrl = (window.location.origin && window.location.origin !== 'null') ? window.location.origin + '/index.html' : 'https://a6867d7b196a4ba3a7a3d9d09f44801a.app.codebuddy.work/index.html';
+  var baseUrl = (window.location.origin && window.location.origin !== 'null') ? window.location.origin + '/index.html' : 'https://zmx-i.github.io/milanxiaotu3/index.html';
   var shareUrl = baseUrl + '#carpool?from=' + encodeURIComponent(fromName) + '&to=' + encodeURIComponent(toName) + '&time=' + encodeURIComponent(timeStr) + '&price=' + encodeURIComponent(priceStr);
   var text = '【民兰校途】' + (user ? user.name || '同学' : '同学') + '邀请你一起拼车！\n\n📍 ' + fromName + ' → ' + toName + '\n🕐 ' + timeStr + '\n💰 ' + priceStr + '\n👥 ' + seatsStr + '\n\n点击链接加入：' + shareUrl;
 
@@ -6075,7 +6075,7 @@ function getActiveTripData() {
 }
 
 // 公网部署地址（CloudStudio），分享链接统一使用此地址
-var SHARE_BASE_URL = 'https://a6867d7b196a4ba3a7a3d9d09f44801a.app.codebuddy.work/share.html';
+var SHARE_BASE_URL = 'https://zmx-i.github.io/milanxiaotu3/index.html';
 
 var shareMapInstance = null;
 var shareCarMarker = null;
@@ -6134,7 +6134,7 @@ function openShareModal(cardStatus, orderData) {
     'ta=' + currentShareData.toCoord[0] + ',' + currentShareData.toCoord[1],
   ];
   var shareQuery = '?' + encodedParams.join('&');
-  currentShareData.shareUrl = SHARE_BASE_URL + shareQuery;
+  currentShareData.shareUrl = SHARE_BASE_URL + '#share' + shareQuery;
   currentShareData.shareHash = shareQuery;
 
   document.getElementById('shareTripSummary').innerHTML =
