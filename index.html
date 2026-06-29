@@ -5009,6 +5009,11 @@ function switchPage(pageName, el) {
     resetRoutePlanMap();
   }
 
+  // 返回预约出行页时重新初始化地图
+  if (pageName === 'book' && state.currentStep === 3) {
+    setTimeout(function() { initBookMap(); }, 300);
+  }
+
   window.scrollTo(0, 0);
 }
 
