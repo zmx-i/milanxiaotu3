@@ -5876,8 +5876,7 @@ function copyInviteCard() {
   var priceStr = d ? d.price : '¥35';
   var seatsStr = d ? d.seats : '剩2座';
   var user = getSession();
-  var baseUrl = window.location.href.split('#')[0];
-  var shareUrl = baseUrl + '#carpool?from=' + encodeURIComponent(fromName) + '&to=' + encodeURIComponent(toName) + '&time=' + encodeURIComponent(timeStr) + '&price=' + encodeURIComponent(priceStr);
+  var shareUrl = 'https://zmx-i.github.io/milanxiaotu3/index.html#carpool?from=' + encodeURIComponent(fromName) + '&to=' + encodeURIComponent(toName) + '&time=' + encodeURIComponent(timeStr) + '&price=' + encodeURIComponent(priceStr);
   var text = '【民兰校途】' + (user ? user.name || '同学' : '同学') + '邀请你一起拼车！\n\n📍 ' + fromName + ' → ' + toName + '\n🕐 ' + timeStr + '\n💰 ' + priceStr + '\n👥 ' + seatsStr + '\n\n点击链接加入：' + shareUrl;
 
   // 策略1：现代 Clipboard API（需要 HTTPS）
@@ -5943,8 +5942,7 @@ function shareInviteCard() {
   var priceStr = d ? d.price : '¥35';
   var seatsStr = d ? d.seats : '剩2座';
   var user = getSession();
-  var baseUrl = window.location.href.split('#')[0];
-  var shareUrl = baseUrl + '#carpool?from=' + encodeURIComponent(fromName) + '&to=' + encodeURIComponent(toName) + '&time=' + encodeURIComponent(timeStr) + '&price=' + encodeURIComponent(priceStr);
+  var shareUrl = 'https://zmx-i.github.io/milanxiaotu3/index.html#carpool?from=' + encodeURIComponent(fromName) + '&to=' + encodeURIComponent(toName) + '&time=' + encodeURIComponent(timeStr) + '&price=' + encodeURIComponent(priceStr);
   var text = '【民兰校途】' + (user ? user.name || '同学' : '同学') + '邀请你一起拼车！\n\n📍 ' + fromName + ' → ' + toName + '\n🕐 ' + timeStr + '\n💰 ' + priceStr + '\n👥 ' + seatsStr + '\n\n点击链接加入：' + shareUrl;
 
   // 策略1：系统原生分享（手机端可用）
