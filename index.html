@@ -3723,10 +3723,10 @@ function mockDelay(ms = 500) {
 
 // 模拟司机订单数据
 const mockDriverOrders = [
-  { id: 1001, from: '榆中校区', to: '中川机场', time: '2026-06-29 08:30', passengers: 2, price: 70, status: 'pending', passenger: '张同学', phone: '138****1234' },
-  { id: 1002, from: '西北民族大学', to: '兰州西站', time: '2026-06-29 10:00', passengers: 1, price: 35, status: 'pending', passenger: '李同学', phone: '139****5678' },
-  { id: 1003, from: '榆中校区', to: '中川机场', time: '2026-06-28 09:00', passengers: 3, price: 105, status: 'completed', passenger: '王同学', phone: '137****9012' },
-  { id: 1004, from: '兰州大学', to: '火车站', time: '2026-06-28 14:30', passengers: 1, price: 35, status: 'completed', passenger: '赵同学', phone: '136****3456' },
+  { id: 1001, from: '榆中校区', to: '中川机场', time: '2026-06-29 08:30', passengers: 2, price: 70, status: 'pending', passenger: '张同学', phone: '138****1234', driverPhone: '13800003333' },
+  { id: 1002, from: '西北民族大学', to: '兰州西站', time: '2026-06-29 10:00', passengers: 1, price: 35, status: 'pending', passenger: '李同学', phone: '139****5678', driverPhone: '13800003333' },
+  { id: 1003, from: '榆中校区', to: '中川机场', time: '2026-06-28 09:00', passengers: 3, price: 105, status: 'completed', passenger: '王同学', phone: '137****9012', driverPhone: '13800003333' },
+  { id: 1004, from: '兰州大学', to: '火车站', time: '2026-06-28 14:30', passengers: 1, price: 35, status: 'completed', passenger: '赵同学', phone: '136****3456', driverPhone: '13800003333' },
 ];
 
 // 模拟学生订单数据（按手机号区分）
@@ -4144,10 +4144,15 @@ async function sendSms(phone, btnId) {
 
 function fillDemoAccount(phone) {
   document.getElementById('loginPhone').value = phone;
-  switchLoginMode('sms');
-  setTimeout(function() {
-    sendLoginSms();
-  }, 300);
+  var isPasswordMode = document.getElementById('loginPassword').parentElement.style.display !== 'none';
+  if (isPasswordMode) {
+    document.getElementById('loginPassword').value = '123456';
+    showToast('已填充手机号和密码');
+  } else {
+    setTimeout(function() {
+      sendLoginSms();
+    }, 300);
+  }
 }
 
 // 登录验证码
@@ -4844,7 +4849,11 @@ function getStatusText(status) {
     pending: '等待接单',
     accepted: '已接单',
     completed: '已完成',
-    cancelled: '已取消'
+    cancelled: '已取消',
+    waiting: '等待接单',
+    ongoing: '进行中',
+    done: '已完成',
+    matched: '已匹配'
   };
   return map[status] || status;
 }
