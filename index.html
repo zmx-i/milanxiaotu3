@@ -2773,8 +2773,8 @@ body.share-page { overflow: hidden; }
       </div>
     </div>
 
-    <!-- 体验账号（已隐藏） -->
-    <div class="demo-accounts" style="display:none;">
+    <!-- 体验账号 -->
+    <div class="demo-accounts">
       <div class="demo-accounts-header">
         <span class="demo-icon">🎯</span>
         <span class="demo-title">体验账号</span>
@@ -4058,16 +4058,10 @@ function switchLoginMode(mode) {
   }
 }
 
-// ========== 短信验证码（互亿无线API） ==========
+// ========== 短信验证码（演示模式） ==========
 let smsCountdown = 0;
 let smsCountdownTimer = null;
 let smsTargetBtnId = 'smsSendBtn';
-
-const HUYI_CONFIG = {
-  account: 'C47521534',
-  password: '30c204e77cc2bc6dd5728bfc789d08de',
-  apiUrl: 'http://106.ihuyi.com/webservice/sms.php'
-};
 
 function generateSmsCode() {
   return Math.floor(100000 + Math.random() * 900000).toString();
@@ -4088,55 +4082,20 @@ async function sendSms(phone, btnId) {
   btn.disabled = true;
   btn.textContent = '发送中…';
 
-  try {
-    const code = generateSmsCode();
-    const content = `您的验证码是：${code}。请不要把验证码泄露给其他人。`;
-    
-    localStorage.setItem('ml_demo_sms_code', code);
-    localStorage.setItem('ml_demo_sms_phone', phone);
-
-    const params = new URLSearchParams();
-    params.append('method', 'Submit');
-    params.append('account', HUYI_CONFIG.account);
-    params.append('password', HUYI_CONFIG.password);
-    params.append('mobile', phone);
-    params.append('content', content);
-    params.append('format', 'json');
-
-    const response = await fetch(HUYI_CONFIG.apiUrl, {
-      method: 'POST',
-      headers: {
-        'Content-Type': 'application/x-www-form-urlencoded',
-        'Accept': 'application/json'
-      },
-      body: params.toString(),
-      mode: 'cors'
-    });
-
-    const result = await response.json();
-
-    if (result.code === 2) {
-      showToast('✅ 验证码已发送，请查收短信', 5000);
-      startSmsCountdown();
-    } else {
-      showToast('❌ 发送失败：' + (result.msg || '未知错误'), 5000);
-      btn.disabled = false;
-      btn.textContent = '获取验证码';
-    }
-  } catch (error) {
-    showToast('❌ 发送失败：网络错误，已切换到演示模式', 5000);
-    
-    const demoCode = generateSmsCode();
-    localStorage.setItem('ml_demo_sms_code', demoCode);
-    
-    const targetInputId = btnId === 'smsSendBtn' ? 'loginSmsCode' : (btnId === 'regSmsSendBtn' ? 'regSmsCode' : '');
-    if (targetInputId) {
-      const input = document.getElementById(targetInputId);
-      if (input) { input.value = demoCode; }
-    }
-    showToast('📱 演示模式：验证码已自动填充：' + demoCode, 6000);
-    startSmsCountdown();
+  await mockDelay(800);
+  
+  const demoCode = generateSmsCode();
+  localStorage.setItem('ml_demo_sms_code', demoCode);
+  localStorage.setItem('ml_demo_sms_phone', phone);
+  
+  const targetInputId = btnId === 'smsSendBtn' ? 'loginSmsCode' : (btnId === 'regSmsSendBtn' ? 'regSmsCode' : '');
+  if (targetInputId) {
+    const input = document.getElementById(targetInputId);
+    if (input) { input.value = demoCode; }
   }
+  
+  showToast('📱 验证码已发送：' + demoCode, 6000);
+  startSmsCountdown();
 }
 
 // 登录验证码
