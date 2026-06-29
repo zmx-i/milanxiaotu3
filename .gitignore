@@ -6,7 +6,6 @@ node_modules/
 server.js
 package.json
 package-lock.json
-vercel.json
 启动服务器.bat
 DEPLOY.md
 后台/

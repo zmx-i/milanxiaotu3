@@ -1,8 +1,9 @@
 const fetch = require('node-fetch');
 
+// 互亿无线短信配置（部署到 Vercel 后在 Dashboard 设置环境变量）
 const HUYI_CONFIG = {
-  account: 'C47521534',
-  password: '30c204e77cc2bc6dd5728bfc789d08de',
+  account: process.env.HUYI_ACCOUNT || 'C47521534',
+  password: process.env.HUYI_PASSWORD || '30c204e77cc2bc6dd5728bfc789d08de',
   apiUrl: 'http://106.ihuyi.com/webservice/sms.php'
 };
 
