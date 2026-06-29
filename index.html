@@ -193,14 +193,6 @@ ul { list-style: none; }
   border: 1px solid rgba(255,255,255,0.2);
 }
 .hero-badge.highlight { background: var(--accent); color: #fff; border-color: var(--accent); }
-.hero-stats {
-  display: flex;
-  gap: 28px;
-  margin-top: 24px;
-}
-.hero-stat-item { text-align: center; }
-.hero-stat-num { font-size: 22px; font-weight: 800; color: #fff; }
-.hero-stat-label { font-size: 11px; color: rgba(255,255,255,0.6); margin-top: 2px; }
 
 /* ========== Quick Book Card ========== */
 .quick-book-section { padding: 24px; margin-top: -20px; position: relative; z-index: 10; }
@@ -993,7 +985,8 @@ ul { list-style: none; }
 .review-item-date { font-size: 12px; color: var(--text-light); }
 .review-item-content { font-size: 13px; color: var(--text-secondary); line-height: 1.5; }
 
-.feedback-content { padding: 20px; }
+.feedback-content { padding: 20px; overflow-y: auto; flex: 1; max-height: 55vh; }
+.feedback-modal { display: flex; flex-direction: column; }
 .feedback-tip {
   text-align: center; padding: 14px; margin-bottom: 16px;
   background: rgba(251, 191, 36, 0.1); border-radius: 10px;
@@ -1359,7 +1352,6 @@ ul { list-style: none; }
   .bottom-nav { display: flex; }
   .hero { padding: 24px 20px 36px; }
   .hero-title { font-size: 22px; }
-  .hero-stats { gap: 20px; }
   .quick-book-section { padding: 18px 16px; }
   .section { padding: 0 16px 24px; }
   .routes-grid { grid-template-columns: repeat(1, 1fr); }
@@ -1879,6 +1871,44 @@ ul { list-style: none; }
   cursor: not-allowed; transform: none;
 }
 .login-btn:disabled:hover { transform: none; box-shadow: none; }
+
+/* 体验账号 */
+.demo-accounts {
+  margin-top: 20px;
+  padding: 16px;
+  background: linear-gradient(135deg, rgba(26,95,168,0.05), rgba(20,184,129,0.05));
+  border: 1px dashed rgba(26,95,168,0.3);
+  border-radius: 12px;
+}
+.demo-accounts-header {
+  display: flex; align-items: center; gap: 8px;
+  margin-bottom: 12px;
+}
+.demo-icon { font-size: 16px; }
+.demo-title { font-size: 14px; font-weight: 700; color: var(--primary); }
+.demo-accounts-list { display: flex; flex-direction: column; gap: 10px; }
+.demo-account-item {
+  display: flex; align-items: center; gap: 12px;
+  padding: 10px 12px;
+  background: rgba(255,255,255,0.8);
+  border-radius: 8px;
+}
+.demo-role {
+  font-size: 12px; font-weight: 600;
+  padding: 3px 8px;
+  background: rgba(26,95,168,0.08);
+  color: var(--primary);
+  border-radius: 4px;
+}
+.demo-info { flex: 1; }
+.demo-phone { font-size: 14px; font-weight: 700; color: var(--text); font-family: monospace; }
+.demo-pwd { font-size: 12px; color: var(--text-secondary); margin-top: 2px; }
+.demo-accounts-tip {
+  margin-top: 10px;
+  font-size: 12px;
+  color: var(--text-secondary);
+  text-align: center;
+}
 
 /* 登录须知弹窗 */
 .agreement-overlay {
@@ -2684,13 +2714,6 @@ body.share-page { overflow: hidden; }
           我已阅读并同意<a onclick="event.stopPropagation();showAgreement()">《登录须知》</a>和<a onclick="event.stopPropagation();showAgreement()">《隐私政策》</a>
         </span>
       </div>
-      <div class="login-remember">
-        <label class="agree-checkbox-wrap" onclick="event.stopPropagation()">
-          <input type="checkbox" id="loginRememberCheck" checked>
-          <div class="agree-checkbox-visual">✓</div>
-        </label>
-        <span>记住手机号</span>
-      </div>
       <button class="login-btn" id="loginBtn" onclick="doLogin()">登 录</button>
       <div class="login-tip">
         还没有账号？<a onclick="switchLoginTab('register')">立即注册</a>
@@ -2748,6 +2771,38 @@ body.share-page { overflow: hidden; }
       <div class="login-tip">
         已有账号？直接登录
       </div>
+    </div>
+
+    <!-- 体验账号 -->
+    <div class="demo-accounts">
+      <div class="demo-accounts-header">
+        <span class="demo-icon">🎯</span>
+        <span class="demo-title">体验账号</span>
+      </div>
+      <div class="demo-accounts-list">
+        <div class="demo-account-item">
+          <div class="demo-role">👨‍🎓 学生</div>
+          <div class="demo-info">
+            <div class="demo-phone">13800001111</div>
+            <div class="demo-pwd">密码：123456</div>
+          </div>
+        </div>
+        <div class="demo-account-item">
+          <div class="demo-role">👨‍🎓 学生</div>
+          <div class="demo-info">
+            <div class="demo-phone">13800002222</div>
+            <div class="demo-pwd">密码：123456</div>
+          </div>
+        </div>
+        <div class="demo-account-item">
+          <div class="demo-role">🚗 司机</div>
+          <div class="demo-info">
+            <div class="demo-phone">13800003333</div>
+            <div class="demo-pwd">密码：123456</div>
+          </div>
+        </div>
+      </div>
+      <div class="demo-accounts-tip">📱 验证码点击获取后自动填入：123456</div>
     </div>
 
     
@@ -2865,20 +2920,6 @@ body.share-page { overflow: hidden; }
               <span class="hero-badge" id="heroAuthBadge">✅ 师生认证</span>
               <span class="hero-badge">💰 透明定价</span>
               <span class="hero-badge">🛡️ 全程保障</span>
-            </div>
-            <div class="hero-stats">
-              <div class="hero-stat-item">
-                <div class="hero-stat-num">2800+</div>
-                <div class="hero-stat-label">注册师生</div>
-              </div>
-              <div class="hero-stat-item">
-                <div class="hero-stat-num">4.9⭐</div>
-                <div class="hero-stat-label">综合评分</div>
-              </div>
-              <div class="hero-stat-item">
-                <div class="hero-stat-num">98%</div>
-                <div class="hero-stat-label">准时率</div>
-              </div>
             </div>
           </div>
         </div>
@@ -3126,7 +3167,39 @@ body.share-page { overflow: hidden; }
               <div class="route-select-card" onclick="selectBookRoute(this, 'custom', '自定义', 0)">
                 <div class="rs-icon">📌</div>
                 <div class="rs-name">自定义地点</div>
-                <div class="rs-price">询价</div>
+                <div class="rs-price" id="customCardPrice">询价</div>
+              </div>
+            </div>
+
+            <!-- 自定义路线询价面板 -->
+            <div id="customRoutePanel" style="display:none; background: rgba(26,95,168,0.04); border: 1px dashed rgba(26,95,168,0.25); border-radius: 14px; padding: 16px; margin-top: 8px; margin-bottom: 8px;">
+              <div style="font-size: 13px; font-weight: 700; color: var(--primary); margin-bottom: 12px; display: flex; align-items: center; gap: 6px;">
+                <span>📌</span> 自定义路线询价
+              </div>
+              <div class="datetime-grid" style="grid-template-columns: 1fr 1fr; gap: 10px; margin-bottom: 10px;">
+                <div class="form-group" style="margin:0">
+                  <label class="form-label" style="font-size:11px">起点</label>
+                  <input type="text" class="form-control" id="customFrom" value="榆中校区" placeholder="输入起点">
+                </div>
+                <div class="form-group" style="margin:0">
+                  <label class="form-label" style="font-size:11px">终点</label>
+                  <input type="text" class="form-control" id="customTo" placeholder="输入终点">
+                </div>
+              </div>
+              <div class="form-group" style="margin-bottom:10px">
+                <label class="form-label" style="font-size:11px">预估距离（系统自动估算）</label>
+                <div class="form-control" style="background: rgba(26,95,168,0.06); color: var(--primary); font-weight: 600; display: flex; align-items: center; gap: 6px; cursor: default;">
+                  <span id="customDistDisplay">等待输入起点和终点…</span>
+                </div>
+              </div>
+              <div style="font-size: 11px; color: var(--text-tertiary); line-height: 1.6; margin-bottom: 10px; background: #fff; border-radius: 8px; padding: 8px 10px;">
+                💡 计价参照兰州市出租车/滴滴标准：<br>
+                • 拼车：起步价 ¥8（3公里内），超出每公里 ¥1.5<br>
+                • 专车：起步价 ¥20（3公里内），超出每公里 ¥3.75
+              </div>
+              <div style="display:flex; gap:8px; align-items:center;">
+                <button class="btn-primary" style="flex:1; padding:10px 14px; font-size:13px;" onclick="calculateCustomPrice()">🧮 估算价格</button>
+                <div id="customPriceResult" style="font-size: 14px; font-weight: 700; color: var(--primary); white-space: nowrap; display:none;"></div>
               </div>
             </div>
 
@@ -3285,7 +3358,7 @@ body.share-page { overflow: hidden; }
               <div class="plan-locations">
                 <div class="plan-loc-line">
                   <div class="plan-dot-start"></div>
-                  <div class="plan-loc-name">榆中校区（兰州大学）</div>
+                  <div class="plan-loc-name" id="planStartName">榆中校区（兰州大学）</div>
                 </div>
                 <div class="plan-loc-line">
                   <div class="plan-dot-end"></div>
@@ -3335,7 +3408,7 @@ body.share-page { overflow: hidden; }
           </div>
 
           <!-- Ongoing Order -->
-          <div class="order-card" data-status="ongoing" onclick="toggleOrderDetail(this)">
+          <div class="order-card" data-id="ML20260626001" data-status="ongoing" onclick="toggleOrderDetail(this)">
             <div class="order-card-header">
               <div class="order-id">订单 #ML20260626001</div>
               <div class="order-status status-ongoing">🚗 行程中</div>
@@ -3369,14 +3442,15 @@ body.share-page { overflow: hidden; }
               <div class="order-detail-row"><span class="od-label">实况</span><span class="od-value" style="color:var(--secondary)">正在前往兰州西站，预计15:20到达</span></div>
             </div>
             <div class="order-actions">
-              <div class="order-action-btn btn-share-trip" onclick="event.stopPropagation();shareTrip()">📤 分享行程</div>
+              <div class="order-action-btn btn-share-trip" onclick="event.stopPropagation();shareTrip(this)">📤 分享行程</div>
               <div class="order-action-btn btn-share-trip" onclick="event.stopPropagation();callDriver()">📞 联系司机</div>
+              <div class="order-action-btn" style="background:rgba(20,184,129,0.08);color:#14b87a" onclick="event.stopPropagation();confirmArrival(this)">✅ 确认到达</div>
               <div class="order-action-btn" style="background:rgba(220,38,38,0.08);color:#dc2626" onclick="event.stopPropagation();callEmergency()">🆘 紧急求助</div>
             </div>
           </div>
 
           <!-- Waiting Order -->
-          <div class="order-card" data-status="waiting" onclick="toggleOrderDetail(this)">
+          <div class="order-card" data-id="ML20260627008" data-status="waiting" onclick="toggleOrderDetail(this)">
             <div class="order-card-header">
               <div class="order-id">订单 #ML20260627008</div>
               <div class="order-status status-waiting">⏳ 匹配中</div>
@@ -3410,13 +3484,13 @@ body.share-page { overflow: hidden; }
               <div class="order-detail-row"><span class="od-label">提示</span><span class="od-value">匹配截止至出发前2小时，届时自动确认</span></div>
             </div>
             <div class="order-actions">
-              <div class="order-action-btn btn-share-trip" onclick="event.stopPropagation();inviteFriend()">📢 邀请同学拼</div>
+              <div class="order-action-btn btn-share-trip" onclick="event.stopPropagation();openInviteCard(this)">📢 邀请同学拼</div>
               <div class="order-action-btn btn-cancel" onclick="event.stopPropagation();cancelOrder(this)">✕ 取消订单</div>
             </div>
           </div>
 
           <!-- Matched Order（配对成功，可取消） -->
-          <div class="order-card" data-status="matched" onclick="toggleOrderDetail(this)">
+          <div class="order-card" data-id="ML20260625015" data-status="matched" onclick="toggleOrderDetail(this)">
             <div class="order-card-header">
               <div class="order-id">订单 #ML20260625015</div>
               <div class="order-status status-matched">🤝 已配对</div>
@@ -3451,14 +3525,14 @@ body.share-page { overflow: hidden; }
               <div class="order-detail-row"><span class="od-label">截止</span><span class="od-value" style="color:#d97706">出发前2小时截止匹配，超时自动确认</span></div>
             </div>
             <div class="order-actions">
-              <div class="order-action-btn btn-share-trip" onclick="event.stopPropagation();inviteFriend()">📢 邀请同学拼</div>
+              <div class="order-action-btn btn-share-trip" onclick="event.stopPropagation();openInviteCard(this)">📢 邀请同学拼</div>
               <div class="order-action-btn btn-share-trip" onclick="event.stopPropagation();callDriver()">📞 联系司机</div>
               <div class="order-action-btn btn-cancel" onclick="event.stopPropagation();cancelOrder(this)">✕ 取消订单</div>
             </div>
           </div>
 
           <!-- Completed Orders -->
-          <div class="order-card" data-status="done" onclick="toggleOrderDetail(this)">
+          <div class="order-card" data-id="ML20260620003" data-status="done" onclick="toggleOrderDetail(this)">
             <div class="order-card-header">
               <div class="order-id">订单 #ML20260620003</div>
               <div class="order-status status-done">✅ 已完成</div>
@@ -3497,7 +3571,7 @@ body.share-page { overflow: hidden; }
             </div>
           </div>
 
-          <div class="order-card" data-status="done" onclick="toggleOrderDetail(this)">
+          <div class="order-card" data-id="ML20260615012" data-status="done" onclick="toggleOrderDetail(this)">
             <div class="order-card-header">
               <div class="order-id">订单 #ML20260615012</div>
               <div class="order-status status-done">✅ 已完成</div>
@@ -3535,6 +3609,9 @@ body.share-page { overflow: hidden; }
               <div class="order-action-btn btn-rebook" onclick="event.stopPropagation();rebook()">🔄 再次预约</div>
             </div>
           </div>
+
+          <!-- Dynamic Orders (用户下单后自动插入) -->
+          <div id="dynamicOrders"></div>
 
           <div class="empty-state" id="orderEmpty" style="display:none">
             <div class="empty-icon">📭</div>
@@ -3833,62 +3910,154 @@ body.share-page { overflow: hidden; }
 // 同源时为空字符串（由 server.js 提供静态文件+API）
 // 跨域时填后端地址，如 'https://your-server.com'
 // 直接打开 file:// 时回退到 localhost:3456
-var API_BASE = '';
-if (window.location.origin.includes('localhost') || window.location.origin.includes('codebuddy')) {
-  API_BASE = window.location.origin;  // 同源模式
-} else if (window.location.protocol === 'file:') {
-  API_BASE = 'http://localhost:3456';  // 本地直接打开HTML文件时
-} else {
-  API_BASE = window.location.origin;  // 默认使用当前域名
-}
-
-const PAYMENT_API = API_BASE; // 统一使用 API_BASE（必须在所有引用 PAYMENT_API 的函数之前定义）
-
+const API_BASE = '';
+const PAYMENT_API = '';
 const TOKEN_KEY = 'mlxt_jwt_token';
 
 function getAuthToken() { return localStorage.getItem(TOKEN_KEY); }
 function setAuthToken(token) { localStorage.setItem(TOKEN_KEY, token); }
 function removeAuthToken() { localStorage.removeItem(TOKEN_KEY); }
 
-// 通用 API 请求函数（3秒超时，避免后端不在线时长时间卡住）
+// ========== 纯前端模拟 API ==========
+function mockDelay(ms = 500) {
+  return new Promise(resolve => setTimeout(resolve, ms));
+}
+
+// 模拟司机订单数据
+const mockDriverOrders = [
+  { id: 1001, from: '榆中校区', to: '中川机场', time: '2026-06-29 08:30', passengers: 2, price: 70, status: 'pending', passenger: '张同学', phone: '138****1234' },
+  { id: 1002, from: '西北民族大学', to: '兰州西站', time: '2026-06-29 10:00', passengers: 1, price: 35, status: 'pending', passenger: '李同学', phone: '139****5678' },
+  { id: 1003, from: '榆中校区', to: '中川机场', time: '2026-06-28 09:00', passengers: 3, price: 105, status: 'completed', passenger: '王同学', phone: '137****9012' },
+  { id: 1004, from: '兰州大学', to: '火车站', time: '2026-06-28 14:30', passengers: 1, price: 35, status: 'completed', passenger: '赵同学', phone: '136****3456' },
+];
+
+// 模拟司机收入数据
+const mockDriverEarnings = {
+  today: { orders: 2, earnings: 140 },
+  week: { orders: 8, earnings: 560 },
+  month: { orders: 32, earnings: 2240 },
+  history: [
+    { date: '06-29', earnings: 140, orders: 2 },
+    { date: '06-28', earnings: 175, orders: 5 },
+    { date: '06-27', earnings: 105, orders: 3 },
+    { date: '06-26', earnings: 210, orders: 6 },
+    { date: '06-25', earnings: 70, orders: 2 },
+    { date: '06-24', earnings: 140, orders: 4 },
+    { date: '06-23', earnings: 35, orders: 1 },
+  ]
+};
+
+// 模拟联系人数据
+const mockContacts = [
+  { id: 1, name: '张三', phone: '13800001234', relationship: '同学' },
+  { id: 2, name: '李四', phone: '13900005678', relationship: '朋友' },
+  { id: 3, name: '王五', phone: '13700009012', relationship: '家人' },
+];
+
+// 模拟用户数据
+const mockUsers = {
+  '13800001111': { phone: '13800001111', nickname: '杨同学', school: '西北民族大学', user_type: 'student', verified: 1, car_plate: '' },
+  '13800002222': { phone: '13800002222', nickname: '李同学', school: '兰州大学', user_type: 'student', verified: 1, car_plate: '' },
+  '13800003333': { phone: '13800003333', nickname: '王师傅', school: '', user_type: 'driver', verified: 1, car_plate: '甘A·8K632' },
+};
+
 async function apiPost(url, data = {}, needAuth = false) {
-  const headers = { 'Content-Type': 'application/json' };
-  if (needAuth) {
+  await mockDelay();
+  
+  if (url === '/api/auth/login') {
+    const user = mockUsers[data.phone];
+    if (user && data.password === '123456') {
+      return { success: true, user: user, token: 'demo-token-' + Date.now() };
+    }
+    return { success: false, message: '手机号或密码错误' };
+  }
+  
+  if (url === '/api/auth/login-sms') {
+    const user = mockUsers[data.phone] || {
+      phone: data.phone,
+      nickname: data.phone.slice(-4) + (data.user_type === 'driver' ? '师傅' : '同学'),
+      school: '演示用户',
+      user_type: data.user_type || 'student',
+      verified: 0,
+      car_plate: '',
+    };
+    return { success: true, user: user, token: 'demo-token-' + Date.now() };
+  }
+  
+  if (url === '/api/auth/register') {
+    mockUsers[data.phone] = {
+      phone: data.phone,
+      nickname: data.nickname,
+      school: '',
+      user_type: data.user_type || 'student',
+      verified: 0,
+      car_plate: data.car_plate || '',
+    };
+    return { success: true, user: mockUsers[data.phone], token: 'demo-token-' + Date.now() };
+  }
+  
+  if (url === '/api/user/carplate') {
     const token = getAuthToken();
-    if (token) headers['Authorization'] = 'Bearer ' + token;
+    if (token) {
+      return { success: true, message: '车牌绑定成功' };
+    }
+    return { success: false, message: '请先登录' };
   }
-  const ctrl = new AbortController();
-  const timer = setTimeout(function(){ ctrl.abort(); }, 10000);
-  try {
-    const resp = await fetch(API_BASE + url, {
-      method: 'POST', headers,
-      body: JSON.stringify(data),
-      signal: ctrl.signal,
-    });
-    clearTimeout(timer);
-    return resp.json();
-  } catch(e) {
-    clearTimeout(timer);
-    throw e;
+  
+  if (url.includes('/api/driver/orders/')) {
+    return { success: true, message: '操作成功' };
   }
+  
+  if (url === '/api/contacts/add') {
+    return { success: true, message: '联系人添加成功' };
+  }
+  
+  if (url === '/api/contacts/delete') {
+    return { success: true, message: '联系人删除成功' };
+  }
+  
+  return { success: false, message: '未知接口' };
 }
 
 async function apiGet(url, needAuth = false) {
-  const headers = {};
-  if (needAuth) {
-    const token = getAuthToken();
-    if (token) headers['Authorization'] = 'Bearer ' + token;
+  await mockDelay();
+  
+  if (url === '/api/user/profile') {
+    return { success: true, profile: { name: '演示用户', phone: '138****1111' } };
   }
-  const ctrl = new AbortController();
-  const timer = setTimeout(function(){ ctrl.abort(); }, 10000);
-  try {
-    const resp = await fetch(API_BASE + url, { headers, signal: ctrl.signal });
-    clearTimeout(timer);
-    return resp.json();
-  } catch(e) {
-    clearTimeout(timer);
-    throw e;
+  
+  if (url === '/api/contacts') {
+    return { success: true, contacts: mockContacts };
   }
+  
+  if (url === '/api/driver/dashboard') {
+    return {
+      success: true,
+      stats: { today_orders: 2, today_earnings: 140, rating: '4.9', completion_rate: 100, week_earnings: 560 },
+      new_orders: mockDriverOrders.filter(o => o.status === 'pending'),
+      active_orders: [],
+      recent_earnings: mockDriverEarnings.history.slice(0, 5),
+    };
+  }
+  
+  if (url.includes('/api/driver/orders')) {
+    const status = url.split('status=')[1];
+    let orders = mockDriverOrders;
+    if (status === 'pending') orders = orders.filter(o => o.status === 'pending');
+    if (status === 'completed') orders = orders.filter(o => o.status === 'completed');
+    return { success: true, orders: orders };
+  }
+  
+  if (url.includes('/api/driver/earnings')) {
+    const period = url.split('period=')[1] || 'week';
+    let summary = mockDriverEarnings.week;
+    let details = mockDriverEarnings.history;
+    if (period === 'today') { summary = mockDriverEarnings.today; details = mockDriverEarnings.history.slice(0, 1); }
+    if (period === 'month') { summary = mockDriverEarnings.month; details = mockDriverEarnings.history; }
+    return { success: true, summary: summary, details: details };
+  }
+  
+  return { success: false, message: '未知接口' };
 }
 
 // ========== 用户系统 ==========
@@ -4014,6 +4183,8 @@ function switchLoginTab(mode) {
     document.querySelectorAll('.login-tab')[0].classList.add('active');
     document.getElementById('loginForm').style.display = 'block';
     document.getElementById('registerForm').style.display = 'none';
+    // 切回登录时默认恢复密码登录，避免之前状态残留
+    switchLoginMode('password');
   } else {
     document.querySelectorAll('.login-tab')[1].classList.add('active');
     document.getElementById('loginForm').style.display = 'none';
@@ -4043,9 +4214,8 @@ let smsCountdown = 0;
 let smsCountdownTimer = null;
 let smsTargetBtnId = 'smsSendBtn'; // 当前倒计时作用于哪个按钮
 
-// 通用发送验证码
+// 通用发送验证码（演示模式）
 async function sendSms(phone, btnId) {
-  console.log('[SMS] sendSms called, phone:', phone, 'btnId:', btnId);
   if (!phone || phone.length !== 11) {
     showToast('⚠️ 请先输入正确的手机号');
     return;
@@ -4053,42 +4223,27 @@ async function sendSms(phone, btnId) {
 
   smsTargetBtnId = btnId;
   const btn = document.getElementById(btnId);
-  console.log('[SMS] button element:', btn);
   if (!btn) {
-    console.error('[SMS] button not found:', btnId);
     showToast('⚠️ 按钮未找到');
     return;
   }
   btn.disabled = true;
   btn.textContent = '发送中…';
 
-  try {
-    console.log('[SMS] fetching:', PAYMENT_API + '/api/sms/send');
-    const resp = await fetch(PAYMENT_API + '/api/sms/send', {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ phone }),
-    });
-    console.log('[SMS] response status:', resp.status);
-    const data = await resp.json();
-    console.log('[SMS] response data:', JSON.stringify(data));
-    console.log('[SMS] data.success:', data.success);
-    if (data.success) {
-      console.log('[SMS] starting countdown');
-      showToast('📩 验证码已发送，请注意查收短信');
-      startSmsCountdown();
-    } else {
-      console.log('[SMS] failed:', data.message);
-      showToast('❌ ' + (data.message || '发送失败，请重试'));
-      btn.disabled = false;
-      btn.textContent = '获取验证码';
-    }
-  } catch (err) {
-    console.error('发送验证码失败:', err);
-    showToast('⚠️ 发送验证码失败，请检查网络后重试', 5000);
-    btn.disabled = false;
-    btn.textContent = '获取验证码';
-}
+  await mockDelay(800);
+  
+  // 演示模式：自动生成验证码并填入
+  const demoCode = '123456';
+  localStorage.setItem('ml_demo_sms_code', demoCode);
+  localStorage.setItem('ml_demo_sms_phone', phone);
+  showToast('📱 当前为演示模式，验证码已自动填充：' + demoCode, 6000);
+  
+  const targetInputId = btnId === 'smsSendBtn' ? 'loginSmsCode' : (btnId === 'regSmsSendBtn' ? 'regSmsCode' : '');
+  if (targetInputId) {
+    const input = document.getElementById(targetInputId);
+    if (input) { input.value = demoCode; }
+  }
+  startSmsCountdown();
 }
 
 // 登录验证码
@@ -4128,20 +4283,19 @@ function updateCountdownBtn() {
   document.getElementById(smsTargetBtnId).textContent = smsCountdown + 's 后重发';
 }
 
-// 通用验证码校验（调用后端 /api/sms/verify）
+// 通用验证码校验（演示模式）
 async function verifySms(phone, code) {
-  try {
-    const resp = await fetch(PAYMENT_API + '/api/sms/verify', {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ phone, code }),
-    });
-    const data = await resp.json();
-    return { ok: data.success, msg: data.message || '验证失败' };
-  } catch (err) {
-    console.error('验证码校验失败:', err.message);
-    return { ok: false, msg: '网络错误，请重试' };
+  await mockDelay(300);
+  const demoCode = localStorage.getItem('ml_demo_sms_code');
+  const demoPhone = localStorage.getItem('ml_demo_sms_phone');
+  if (demoCode && demoPhone === phone && code === demoCode) {
+    return { ok: true, msg: '验证通过' };
   }
+  // 演示模式：任何6位数字都可以通过
+  if (code && code.length === 6 && /^\d{6}$/.test(code)) {
+    return { ok: true, msg: '演示模式验证通过' };
+  }
+  return { ok: false, msg: '验证码错误' };
 }
 
 function resetSmsUI() {
@@ -4157,8 +4311,9 @@ function resetSmsUI() {
 // ========== 登录 ==========
 // 本地账号回退登录（后端不可用或后端查不到时）
 function handleLocalFallbackLogin(phone, pwd, loginBtn) {
-  var users = loadUsers(); // loadUsers() 已合并预置账号+localStorage
+  var users = loadUsers();
   var user = users[phone];
+  console.log('[DEBUG] 本地登录回退，手机号:', phone, '用户存在:', !!user, '保存的密码:', user ? (user.password ? '有' : '无') : 'N/A');
   if (!user) {
     showToast('❌ 该手机号未注册，请先注册', 4000);
     loginBtn.textContent = '登 录';
@@ -4166,12 +4321,26 @@ function handleLocalFallbackLogin(phone, pwd, loginBtn) {
     return;
   }
   if (user.password !== pwd) {
-    showToast('❌ 密码错误，请重试', 4000);
+    showToast('❌ 密码错误，请重试。如忘记密码，可用验证码登录', 4000);
     loginBtn.textContent = '登 录';
     loginBtn.disabled = false;
     return;
   }
-  loginSuccess(user);
+  // 补齐字段，确保 loginSuccess 能正常处理
+  var fullUser = {
+    phone: user.phone || phone,
+    name: user.name || user.phone || phone,
+    avatar: user.avatar || '用',
+    school: user.school || '未填写',
+    token: user.token || 'local-token-' + Date.now(),
+    isAuth: user.isAuth || false,
+    userType: user.userType || 'student',
+    carPlate: user.carPlate || '',
+    trips: user.trips || 0,
+    saved: user.saved || 0,
+    rating: user.rating || '5.0',
+  };
+  loginSuccess(fullUser);
 }
 
 async function doLogin() {
@@ -4210,13 +4379,16 @@ async function doLogin() {
         loginSuccess(user);
         return;
       }
-      showToast('❌ ' + (data.message || '登录失败'), 4000);
+      // 后端返回失败（如密码错误/未注册）→ 也尝试本地回退（演示模式兼容）
+      console.log('后端登录失败，尝试本地回退');
+      handleLocalFallbackLogin(phone, pwd, loginBtn);
+      return;
     } catch (err) {
       console.error('登录失败:', err.message);
-      showToast('❌ 服务器连接失败，请确认服务已启动', 4000);
+      // 后端未运行 → 回退到本地密码验证
+      handleLocalFallbackLogin(phone, pwd, loginBtn);
+      return;
     }
-    loginBtn.textContent = '登 录';
-    loginBtn.disabled = false;
   } else {
     // 验证码登录模式 → 调后端API
     const smsCode = document.getElementById('loginSmsCode').value.trim();
@@ -4246,6 +4418,41 @@ async function doLogin() {
       }
     } catch (err) {
       console.error('验证码登录失败:', err);
+      // 后端未运行 → 演示模式：检查本地演示验证码
+      const demoCode = localStorage.getItem('ml_demo_sms_code');
+      const demoPhone = localStorage.getItem('ml_demo_sms_phone');
+      if (demoCode && demoPhone === phone && smsCode === demoCode) {
+        // 演示模式直接登录成功
+        const isDriver = (currentIdentity || 'student') === 'driver';
+        const suffix = isDriver ? '师傅' : '同学';
+        const displayName = phone.slice(-4) + suffix;
+        const user = {
+          phone: phone,
+          name: displayName,
+          avatar: phone.slice(-1),
+          school: '演示模式',
+          token: 'demo-token-' + Date.now(),
+          isAuth: false,
+          userType: currentIdentity || 'student',
+          carPlate: '',
+        };
+        // 保存到本地用户表，方便后续密码登录；若用户已存在则保留原有密码
+        var localUsers = loadUsers();
+        var existing = localUsers[phone];
+        localUsers[phone] = {
+          name: displayName, avatar: phone.slice(-1), phone: phone,
+          password: existing && existing.password ? existing.password : '123456',
+          school: existing && existing.school ? existing.school : '演示模式',
+          userType: currentIdentity || 'student', carPlate: existing && existing.carPlate ? existing.carPlate : '',
+          trips: existing && existing.trips ? existing.trips : 0,
+          saved: existing && existing.saved ? existing.saved : 0,
+          rating: existing && existing.rating ? existing.rating : '5.0'
+        };
+        localStorage.setItem(USERS_KEY, JSON.stringify(localUsers));
+        loginSuccess(user);
+        showToast('✅ 演示模式登录成功（验证码已自动验证）', 4000);
+        return;
+      }
       showToast('⚠️ 网络错误，请检查网络后重试', 4000);
       loginBtn.textContent = '登 录';
       loginBtn.disabled = false;
@@ -4260,10 +4467,6 @@ function loginSuccess(user) {
   resetSmsUI();
   resetAgreement();
   
-  if (document.getElementById('loginRememberCheck')?.checked) {
-    localStorage.setItem('mlxt_remembered_phone', user.phone);
-  }
-  
   const userType = user.userType || 'student';
   if (userType === 'driver') {
     showToast('✅ 司机登录成功！欢迎回来，' + (user.name || user.phone));
@@ -4271,6 +4474,28 @@ function loginSuccess(user) {
   } else {
     showToast('✅ 登录成功！欢迎回来，' + (user.name || user.phone));
     refreshContactsFromServer();
+    
+    // 检查是否需要自动跳转到拼车页面
+    if (window.__AUTO_CARPOOL_AFTER_LOGIN) {
+      switchPage('book', null);
+      const params = window.__CARPOOL_PARAMS;
+      if (params) {
+        if (params.from && params.to) {
+          document.getElementById('bookFrom').value = params.from;
+          document.getElementById('bookTo').value = params.to;
+        }
+        if (params.time) {
+          const timeParts = params.time.split(' ');
+          if (timeParts.length >= 2) {
+            document.getElementById('bookDate').value = timeParts[0];
+            document.getElementById('bookTime').value = timeParts[1];
+          }
+        }
+      }
+      showToast('🔗 已为你打开拼车页面', 3000);
+      window.__AUTO_CARPOOL_AFTER_LOGIN = false;
+      window.__CARPOOL_PARAMS = null;
+    }
   }
 }
 
@@ -4329,9 +4554,23 @@ async function doRegister() {
     }
   } catch (err) {
     console.error('注册失败:', err);
-    showToast('❌ 网络错误，请重试', 4000);
-    regBtn.textContent = '注 册';
-    regBtn.disabled = false;
+    // 后端未运行 → 演示模式：直接注册成功（不要求必须点击过获取验证码）
+    var localUsers = loadUsers();
+    localUsers[phone] = { name: name, avatar: name.charAt(0), phone: phone, password: pwd, school: school || '未填写', userType: currentIdentity, carPlate: carPlate || '', trips: 0, saved: 0, rating: '5.0' };
+    localStorage.setItem(USERS_KEY, JSON.stringify(localUsers));
+    const user = {
+      phone: phone,
+      name: name,
+      avatar: name.charAt(0),
+      school: school || '未填写',
+      token: 'demo-token-' + Date.now(),
+      trips: 0, saved: 0, rating: '5.0',
+      userType: currentIdentity,
+      carPlate: carPlate || '',
+    };
+    loginSuccess(user);
+    showToast('✅ 演示模式注册成功', 4000);
+    return;
   }
 }
 
@@ -4693,20 +4932,19 @@ function closeCarPlateModal(e) {
 }
 
 async function saveCarPlate() {
-  const carPlate = document.getElementById('carPlateInput').value.trim();
-  if (!carPlate) {
-    showToast('⚠️ 请输入车牌号码');
-    return;
-  }
+  var inputEl = document.getElementById('carPlateInput');
+  if (!inputEl) { showToast('⚠️ 页面元素错误，请刷新后重试'); return; }
+  const carPlate = inputEl.value.trim();
+  if (!carPlate) { showToast('⚠️ 请输入车牌号码'); return; }
   try {
     console.log('[DEBUG] 绑定车牌请求:', { url: API_BASE + '/api/user/carplate', data: { car_plate: carPlate }, token: getAuthToken() ? '存在' : '不存在' });
     const data = await apiPost('/api/user/carplate', { car_plate: carPlate }, true);
     console.log('[DEBUG] 绑定车牌响应:', data);
     if (data.success) {
       const user = getSession();
-      user.carPlate = carPlate;
-      setSession(user);
-      document.getElementById('driverCarPlateDisplay').textContent = carPlate;
+      if (user) { user.carPlate = carPlate; setSession(user); }
+      var dDisplay = document.getElementById('driverCarPlateDisplay');
+      if (dDisplay) dDisplay.textContent = carPlate;
       showToast('✅ 车牌绑定成功');
       closeCarPlateModal();
     } else {
@@ -4714,12 +4952,22 @@ async function saveCarPlate() {
     }
   } catch (err) {
     console.error('[ERROR] 绑定车牌失败:', err, 'API_BASE:', API_BASE);
-    if (err.name === 'AbortError') {
-      showToast('❌ 请求超时，请检查网络');
-    } else if (err.name === 'TypeError' && err.message.includes('Failed to fetch')) {
-      showToast('❌ 无法连接服务器，请检查网络或重启服务器');
+    // 后端不可用 → 本地保存（演示模式兼容）
+    const user = getSession();
+    if (user) {
+      user.carPlate = carPlate;
+      setSession(user);
+      var localUsers = loadUsers();
+      if (localUsers[user.phone]) {
+        localUsers[user.phone].carPlate = carPlate;
+        localStorage.setItem(USERS_KEY, JSON.stringify(localUsers));
+      }
+      var dDisplay = document.getElementById('driverCarPlateDisplay');
+      if (dDisplay) dDisplay.textContent = carPlate;
+      showToast('✅ 演示模式：车牌已绑定（' + carPlate + '）');
+      closeCarPlateModal();
     } else {
-      showToast('❌ ' + (err.message || '网络错误，请重试'));
+      showToast('❌ 绑定失败：未登录');
     }
   }
 }
@@ -4810,16 +5058,75 @@ function switchPage(pageName, el) {
 function switchQbTab(el, type) {
   document.querySelectorAll('.qb-tab').forEach(t => t.classList.remove('active'));
   el.classList.add('active');
+  state.tripType = type;
+  
+  var btn = document.querySelector('.btn-book');
+  var infoDiv = document.getElementById('qbPrivateInfo');
+  if (!infoDiv) {
+    var form = document.querySelector('.qb-form');
+    infoDiv = document.createElement('div');
+    infoDiv.id = 'qbPrivateInfo';
+    infoDiv.style.cssText = 'margin-top:12px;padding:12px;background:rgba(26,95,168,0.05);border-radius:10px;font-size:13px;color:var(--text-secondary);line-height:1.6;';
+    form.appendChild(infoDiv);
+  }
+  
+  if (type === 'private') {
+    btn.textContent = '立即预约专车 →';
+    infoDiv.innerHTML = '🚙 <strong style="color:var(--primary)">独立约车</strong>：专属司机点对点接送，无需拼车等待，不与他人共乘，适合赶时间、携带大件行李等场景。价格按整车计算。';
+    infoDiv.style.display = 'block';
+  } else {
+    btn.textContent = '立即查询可拼车辆 →';
+    infoDiv.innerHTML = '🤝 <strong style="color:var(--primary)">拼车出行</strong>：智能匹配同路线同学，4人成团，人均更省，绿色环保。';
+    infoDiv.style.display = 'block';
+  }
 }
 
 // ========== Quick Book ==========
 function quickBook() {
+  // 同步 tripType 到当前选中的首页 tab（防止用户没点 tab 直接点按钮）
+  var activeTab = document.querySelector('.qb-tab.active');
+  if (activeTab) {
+    state.tripType = activeTab.textContent.includes('独立') ? 'private' : 'carpool';
+  }
+
   const route = document.getElementById('qbRoute').value;
   const date = document.getElementById('qbDate').value;
   const time = document.getElementById('qbTime').value;
   if(!route) { showToast('⚠️ 请先选择出行线路'); return; }
   if(!date) { showToast('⚠️ 请选择出行日期'); return; }
   if(!time) { showToast('⚠️ 请选择出行时间'); return; }
+  
+  // 独立约车：直接派单，跳过拼车查询流程
+  if (state.tripType === 'private') {
+    const routeMap = {
+      airport:   { name: '中川机场', price: 60 },
+      west:      { name: '兰州西站', price: 35 },
+      east:      { name: '兰州火车站', price: 28 },
+      city:      { name: '兰州市区', price: 25 },
+      yuzhong:   { name: '榆中高铁站', price: 15 },
+      custom:    { name: '自定义', price: 0 },
+      airport_r: { name: '中川机场（返程）', price: 60 },
+      west_r:    { name: '兰州西站（返程）', price: 35 },
+      east_r:    { name: '兰州火车站（返程）', price: 28 }
+    };
+    const r = routeMap[route] || { name: '自定义', price: 0 };
+    state.selectedRoute = route;
+    state.selectedRouteName = r.name;
+    state.selectedRoutePrice = r.price;
+    
+    // 同步日期时间到预约页
+    document.getElementById('bookDate').value = date;
+    document.getElementById('bookTime').value = time;
+    
+    showToast('🚙 正在为您匹配附近专车…');
+    setTimeout(() => {
+      switchPage('book', null);
+      goStep(3); // 独立约车直接跳到确认页，像滴滴一样
+    }, 800);
+    return;
+  }
+  
+  // 拼车：保持原有查询流程
   showToast('🔍 正在查询可拼车辆…');
   setTimeout(() => {
     showToast('✅ 找到 3 辆匹配车辆，正跳转预约页');
@@ -4834,6 +5141,19 @@ function selectBookRoute(el, routeKey, routeName, price) {
   state.selectedRoute = routeKey;
   state.selectedRouteName = routeName;
   state.selectedRoutePrice = price;
+  // 自定义路线：显示询价面板；其他路线：隐藏
+  var panel = document.getElementById('customRoutePanel');
+  if (panel) {
+    panel.style.display = routeKey === 'custom' ? 'block' : 'none';
+  }
+  if (routeKey === 'custom') {
+    // 重置自定义询价结果
+    var result = document.getElementById('customPriceResult');
+    if (result) { result.style.display = 'none'; result.textContent = ''; }
+    var cardPrice = document.getElementById('customCardPrice');
+    if (cardPrice) cardPrice.textContent = '询价';
+    state.selectedRoutePrice = 0;
+  }
   updatePricePreview();
 }
 
@@ -4857,6 +5177,22 @@ function selectType(el, type) {
   document.getElementById('carpool-info').style.display = type === 'carpool' ? 'block' : 'none';
   document.getElementById('private-info').style.display = type === 'private' ? 'block' : 'none';
   document.getElementById('typeInfo').textContent = type === 'carpool' ? '拼车 · 最多4人' : '独立约车（专享）';
+  
+  // 人数标签差异化
+  var paxLabel = document.querySelector('.pax-label');
+  if (paxLabel) paxLabel.textContent = type === 'private' ? '专车人数' : '出行人数';
+  
+  // 价格标签差异化
+  var priceLabel = document.querySelector('.price-row.total .price-row-label');
+  if (priceLabel) priceLabel.textContent = type === 'private' ? '💳 专车费用（整车）' : '💳 预计人均';
+  
+  // 按钮文字差异化
+  var step2Btn = document.querySelector('#step-content-2 .btn-primary');
+  if (step2Btn) step2Btn.textContent = type === 'private' ? '下一步：确认专车订单 →' : '下一步：确认订单 →';
+  
+  var step3Btn = document.querySelector('#step-content-3 .btn-primary');
+  if (step3Btn) step3Btn.textContent = type === 'private' ? '🚙 确认预约专车' : '🚗 确认发布，立即匹配司机';
+  
   updatePricePreview();
 }
 
@@ -4867,13 +5203,165 @@ function changePax(delta) {
   updatePricePreview();
 }
 
+// ========== Custom Price Estimation (Auto Distance) ==========
+// 常见地点距离对照表（兰州/榆中周边，单位：km），高德失败时 fallback
+var KNOWN_DISTANCES = {
+  '榆中校区': {'中川机场': 68, '兰州西站': 55, '兰州站': 50, '兰州大学': 10, '榆中高铁站': 10, '定远': 12, '和平': 8, '兰州财经大学': 15, '西关十字': 45, '东方红广场': 42, '南关十字': 44, '兰州中心': 46, '西固区': 60, '七里河': 48, '安宁区': 40, '城关区': 43},
+  '兰州大学': {'中川机场': 75, '兰州西站': 62, '兰州站': 58, '榆中校区': 10, '榆中高铁站': 12, '定远': 18, '和平': 14, '兰州财经大学': 8, '西关十字': 38, '东方红广场': 35, '南关十字': 37, '兰州中心': 39, '西固区': 52, '七里河': 42, '安宁区': 35, '城关区': 33},
+  '兰州西站': {'中川机场': 58, '兰州站': 12, '榆中校区': 55, '兰州大学': 62, '榆中高铁站': 58, '定远': 45, '和平': 42, '兰州财经大学': 55, '西关十字': 10, '东方红广场': 8, '南关十字': 9, '兰州中心': 7, '西固区': 15, '七里河': 8, '安宁区': 18, '城关区': 11},
+  '兰州站': {'中川机场': 65, '兰州西站': 12, '榆中校区': 50, '兰州大学': 58, '榆中高铁站': 52, '定远': 40, '和平': 38, '兰州财经大学': 50, '西关十字': 5, '东方红广场': 3, '南关十字': 4, '兰州中心': 8, '西固区': 20, '七里河': 10, '安宁区': 15, '城关区': 4},
+  '中川机场': {'兰州西站': 58, '兰州站': 65, '榆中校区': 68, '兰州大学': 75, '榆中高铁站': 70, '定远': 60, '和平': 58, '兰州财经大学': 70, '西关十字': 62, '东方红广场': 65, '南关十字': 63, '兰州中心': 60, '西固区': 70, '七里河': 65, '安宁区': 68, '城关区': 64},
+  '榆中高铁站': {'中川机场': 70, '兰州西站': 58, '兰州站': 52, '榆中校区': 10, '兰州大学': 12, '定远': 15, '和平': 12, '兰州财经大学': 18, '西关十字': 48, '东方红广场': 45, '南关十字': 47, '兰州中心': 50, '西固区': 62, '七里河': 52, '安宁区': 45, '城关区': 48},
+  '定远': {'中川机场': 60, '兰州西站': 45, '兰州站': 40, '榆中校区': 12, '兰州大学': 18, '榆中高铁站': 15, '和平': 6, '兰州财经大学': 20, '西关十字': 32, '东方红广场': 30, '南关十字': 31, '兰州中心': 34, '西固区': 48, '七里河': 38, '安宁区': 28, '城关区': 33},
+  '和平': {'中川机场': 58, '兰州西站': 42, '兰州站': 38, '榆中校区': 8, '兰州大学': 14, '榆中高铁站': 12, '定远': 6, '兰州财经大学': 18, '西关十字': 36, '东方红广场': 34, '南关十字': 35, '兰州中心': 38, '西固区': 50, '七里河': 40, '安宁区': 32, '城关区': 36},
+  '兰州财经大学': {'中川机场': 70, '兰州西站': 55, '兰州站': 50, '榆中校区': 15, '兰州大学': 8, '榆中高铁站': 18, '定远': 20, '和平': 18, '西关十字': 42, '东方红广场': 40, '南关十字': 41, '兰州中心': 44, '西固区': 58, '七里河': 48, '安宁区': 38, '城关区': 43},
+  '西关十字': {'中川机场': 62, '兰州西站': 10, '兰州站': 5, '榆中校区': 45, '兰州大学': 38, '榆中高铁站': 48, '定远': 32, '和平': 36, '兰州财经大学': 42, '东方红广场': 2, '南关十字': 2, '兰州中心': 5, '西固区': 18, '七里河': 8, '安宁区': 13, '城关区': 2},
+  '东方红广场': {'中川机场': 65, '兰州西站': 8, '兰州站': 3, '榆中校区': 42, '兰州大学': 35, '榆中高铁站': 45, '定远': 30, '和平': 34, '兰州财经大学': 40, '西关十字': 2, '南关十字': 2, '兰州中心': 6, '西固区': 18, '七里河': 9, '安宁区': 14, '城关区': 1}
+};
+
+function fallbackDistance(from, to) {
+  // 标准化地址名
+  var f = from.replace(/[市区县镇路街号]/g, '').replace(/兰州/g, '').replace(/甘肃省/g, '').trim();
+  var t = to.replace(/[市区县镇路街号]/g, '').replace(/兰州/g, '').replace(/甘肃省/g, '').trim();
+
+  // 精确匹配
+  if (KNOWN_DISTANCES[f] && KNOWN_DISTANCES[f][t]) return KNOWN_DISTANCES[f][t];
+  if (KNOWN_DISTANCES[t] && KNOWN_DISTANCES[t][f]) return KNOWN_DISTANCES[t][f];
+
+  // 部分包含匹配
+  for (var start in KNOWN_DISTANCES) {
+    if (f.indexOf(start) >= 0 || start.indexOf(f) >= 0) {
+      for (var end in KNOWN_DISTANCES[start]) {
+        if (t.indexOf(end) >= 0 || end.indexOf(t) >= 0) return KNOWN_DISTANCES[start][end];
+      }
+    }
+  }
+
+  // 双向模糊搜索
+  for (var s in KNOWN_DISTANCES) {
+    for (var e in KNOWN_DISTANCES[s]) {
+      if ((f.indexOf(s) >= 0 || s.indexOf(f) >= 0) && (t.indexOf(e) >= 0 || e.indexOf(t) >= 0))
+        return KNOWN_DISTANCES[s][e];
+      if ((f.indexOf(e) >= 0 || e.indexOf(f) >= 0) && (t.indexOf(s) >= 0 || s.indexOf(t) >= 0))
+        return KNOWN_DISTANCES[s][e];
+    }
+  }
+  // 默认市区内短途
+  return 10;
+}
+
+function calculateCustomPrice() {
+  try {
+    var fromInput = document.getElementById('customFrom');
+    var toInput = document.getElementById('customTo');
+    var fromVal = fromInput ? fromInput.value.trim() : '榆中校区';
+    var toVal = toInput ? toInput.value.trim() : '';
+    var distDisplay = document.getElementById('customDistDisplay');
+
+    if (!toVal) { showToast('⚠️ 请输入终点'); return; }
+
+    // 显示估算中
+    if (distDisplay) distDisplay.textContent = '正在估算距离…';
+
+    // ===== 核心策略：先立即用本地数据出结果（保证一定有响应），再尝试高德优化 =====
+    var fb = fallbackDistance(fromVal, toVal);
+
+    function doCalculate(dist, source) {
+      if (state.customDistance) return; // 已经算过了（高德先返回的情况）
+
+      // 兰州计价规则：拼车起步8元/3km，超出1.5元/km；专车起步20元/3km，超出3.75元/km
+      var carpoolPrice = Math.max(8, Math.round(dist * 1.5));
+      var privatePrice = Math.max(20, Math.round(dist * 3.75));
+
+      state.selectedRoutePrice = carpoolPrice;
+      state.selectedRouteName = fromVal + ' → ' + toVal;
+      state.customDistance = dist;
+
+      var resultEl = document.getElementById('customPriceResult');
+      if (resultEl) {
+        resultEl.style.display = 'block';
+        resultEl.innerHTML = '约 ' + dist + ' 公里 · 拼车 ¥' + carpoolPrice + '/人 · 专车 ¥' + privatePrice + '（整车）';
+      }
+      var cardPrice = document.getElementById('customCardPrice');
+      if (cardPrice) cardPrice.textContent = '¥' + carpoolPrice + '/人起';
+      if (distDisplay) distDisplay.textContent = '约 ' + dist + ' 公里' + (source === 'amap' ? '（高德实测）' : '（自动估算）');
+
+      updatePricePreview();
+      showToast('✅ 价格估算完成，点击"查看路线方案"继续');
+    }
+
+    // 第1步：立即用本地距离表给出结果（保证用户一定能看到反馈）
+    doCalculate(fb, 'local');
+
+    // 第2步：如果高德可用，异步获取更精准的距离来更新结果
+    if (typeof AMap !== 'undefined' && AMap.plugin) {
+      try {
+        AMap.plugin(['AMap.Geocoder', 'AMap.Driving'], function() {
+          try {
+            var geocoder = new AMap.Geocoder({ city: '兰州市' });
+            var addrCount = 0;
+            var startCoord = null;
+            var endCoord = null;
+
+            function tryDrive() {
+              if (!startCoord || !endCoord) return;
+              var driving = new AMap.Driving({ map: null, panel: null, autoFitView: false });
+              driving.search(startCoord, endCoord, function(status, result) {
+                try {
+                  if (status === 'complete' && result.routes && result.routes[0]) {
+                    var route = result.routes[0];
+                    var distKm = Math.round(route.distance / 1000);
+                    // 用高德数据覆盖本地估算（如果差距不大就更新）
+                    if (Math.abs(distKm - fb) <= fb * 0.5) {
+                      state.customStartCoord = startCoord;
+                      state.customEndCoord = endCoord;
+                      doCalculate(distKm, 'amap');
+                    }
+                  }
+                } catch(e) { /* 高德结果处理失败，忽略 */ }
+              });
+            }
+
+            geocoder.getLocation(fromVal, function(status, result) {
+              try {
+                if (status === 'complete' && result.geocodes && result.geocodes[0]) {
+                  startCoord = result.geocodes[0].location;
+                } else if (status === 'complete' && result.regeocode) {
+                  startCoord = result.location;
+                }
+              } catch(e) {}
+              addrCount++;
+              if (addrCount >= 2) tryDrive();
+            });
+
+            geocoder.getLocation(toVal, function(status, result) {
+              try {
+                if (status === 'complete' && result.geocodes && result.geocodes[0]) {
+                  endCoord = result.geocodes[0].location;
+                } else if (status === 'complete' && result.regeocode) {
+                  endCoord = result.location;
+                }
+              } catch(e) {}
+              addrCount++;
+              if (addrCount >= 2) tryDrive();
+            });
+          } catch(e) { /* 高德插件初始化失败，忽略 */ }
+        });
+      } catch(e) { /* 高德加载失败，忽略 */ }
+    }
+  } catch(err) {
+    showToast('⚠️ 估算出错，请重试');
+    console.error('calculateCustomPrice error:', err);
+  }
+}
+
 // ========== Price Preview ==========
 function updatePricePreview() {
   const base = state.selectedRoutePrice;
   let total = base;
   if(state.tripType === 'private') total = Math.round(base * state.pax * 2.5);
-  document.getElementById('basePrice').textContent = '¥' + base + '.00';
-  document.getElementById('totalPrice').textContent = '¥' + total + '.00';
+  document.getElementById('basePrice').textContent = (base > 0 ? '¥' + base + '.00' : '待询价');
+  document.getElementById('totalPrice').textContent = (base > 0 ? '¥' + total + '.00' : '待询价');
 }
 
 // ========== Step Navigation ==========
@@ -4885,6 +5373,32 @@ function goStep(step) {
     }
     const date = document.getElementById('bookDate').value;
     if(!date) { showToast('⚠️ 请选择出行日期'); return; }
+    // 自定义路线：必须已完成询价（价格 > 0）
+    if (state.selectedRoute === 'custom' && state.selectedRoutePrice <= 0) {
+      showToast('⚠️ 请先填写起点和终点并点击"估算价格"');
+      return;
+    }
+
+    // 确保 step 2 的 UI 与 state.tripType 一致（防止默认按钮和 state 不同步）
+    var typeBtns = document.querySelectorAll('.type-btn');
+    if (typeBtns.length >= 2) {
+      typeBtns.forEach(b => b.classList.remove('active'));
+      var targetBtn = state.tripType === 'private' ? typeBtns[1] : typeBtns[0];
+      if (targetBtn) targetBtn.classList.add('active');
+      // 同步 info 显示
+      document.getElementById('carpool-info').style.display = state.tripType === 'carpool' ? 'block' : 'none';
+      document.getElementById('private-info').style.display = state.tripType === 'private' ? 'block' : 'none';
+      document.getElementById('typeInfo').textContent = state.tripType === 'carpool' ? '拼车 · 最多4人' : '独立约车（专享）';
+      // 人数标签
+      var paxLabel = document.querySelector('.pax-label');
+      if (paxLabel) paxLabel.textContent = state.tripType === 'private' ? '专车人数' : '出行人数';
+      // 价格标签
+      var priceLabel = document.querySelector('.price-row.total .price-row-label');
+      if (priceLabel) priceLabel.textContent = state.tripType === 'private' ? '💳 专车费用（整车）' : '💳 预计人均';
+      // 按钮文字
+      var step2Btn = document.querySelector('#step-content-2 .btn-primary');
+      if (step2Btn) step2Btn.textContent = state.tripType === 'private' ? '下一步：确认专车订单 →' : '下一步：确认订单 →';
+    }
   }
 
   // 隐藏路线方案视图（如果正在显示）
@@ -4907,7 +5421,13 @@ function goStep(step) {
     if(line) line.classList.toggle('done', i < step);
   }
 
-  if(step === 3) { populateConfirm(); initBookMap(); }
+  if(step === 3) { populateConfirm(); initBookMap(); 
+    // 独立约车按钮改为"立即叫车"
+    var step3Btn = document.querySelector('#step-content-3 .btn-primary');
+    if (step3Btn) {
+      step3Btn.textContent = state.tripType === 'private' ? '🚙 立即叫车' : '🚗 确认发布，立即匹配司机';
+    }
+  }
   else { resetBookMap(); }
   state.currentStep = step;
   window.scrollTo(0, 0);
@@ -4922,16 +5442,17 @@ function populateConfirm() {
   document.getElementById('confirmPax').textContent = state.pax + ' 人';
   const base = state.selectedRoutePrice;
   const total = state.tripType === 'private' ? Math.round(base * state.pax * 2.5) : base;
-  document.getElementById('confirmPrice').textContent = '¥' + total + '.00 / 人';
+  document.getElementById('confirmPrice').textContent = '¥' + total + '.00' + (state.tripType === 'private' ? '（整车价）' : ' / 人');
 }
 
 // ========== Submit Order ==========
 function submitOrder() {
   const btn = document.querySelector('#step-content-3 .btn-primary');
-  btn.innerHTML = '<span class="spinner"></span> 正在准备订单…';
+  const isPrivate = state.tripType === 'private';
+  btn.innerHTML = '<span class="spinner"></span> ' + (isPrivate ? '正在为您派单…' : '正在准备订单…');
   btn.disabled = true;
   setTimeout(() => {
-    btn.innerHTML = '🚗 确认发布，立即匹配司机';
+    btn.innerHTML = isPrivate ? '🚙 立即叫车' : '🚗 确认发布，立即匹配司机';
     btn.disabled = false;
     // 显示支付弹窗
     const base = state.selectedRoutePrice;
@@ -4939,7 +5460,7 @@ function submitOrder() {
     const date = document.getElementById('bookDate').value || '2026-06-27';
     const time = document.getElementById('bookTime').value || '08:00';
     showPaymentModal({
-      subject: '民兰校途 · 榆中校区 → ' + state.selectedRouteName,
+      subject: state.selectedRoute === 'custom' ? '民兰校途 · ' + state.selectedRouteName : '民兰校途 · 榆中校区 → ' + state.selectedRouteName,
       totalAmount: total,
       routeName: state.selectedRouteName,
       routeKey: state.selectedRoute,
@@ -4955,17 +5476,20 @@ function showSuccessModal(orderId, alipayOrderId) {
   const date = document.getElementById('bookDate').value || '2026-06-27';
   const time = document.getElementById('bookTime').value || '08:00';
   const oid = orderId || 'ML' + Date.now().toString().slice(-8);
+  const isPrivate = state.tripType === 'private';
+  const base = state.selectedRoutePrice;
+  const total = isPrivate ? Math.round(base * state.pax * 2.5) : base;
   document.getElementById('modalContent').innerHTML = `
     <div class="success-animation">
       <div class="success-icon">🎉</div>
-      <div class="success-title">订单发布成功！</div>
+      <div class="success-title">${isPrivate ? '司机已接单！' : '订单发布成功！'}</div>
       <div class="success-order">订单号：<strong>#${oid}</strong></div>
     </div>
     <div class="success-info">
       <div class="si-row"><span class="si-label">目的地</span><span class="si-value">${state.selectedRouteName}</span></div>
       <div class="si-row"><span class="si-label">出行时间</span><span class="si-value">${date} ${time}</span></div>
-      <div class="si-row"><span class="si-label">出行方式</span><span class="si-value">${state.tripType === 'carpool' ? '拼车' : '独立约车'}</span></div>
-      <div class="si-row"><span class="si-label">费用</span><span class="si-value" style="color:var(--primary)">¥${state.selectedRoutePrice}.00 / 人</span></div>
+      <div class="si-row"><span class="si-label">出行方式</span><span class="si-value">${isPrivate ? '独立约车' : '拼车'}</span></div>
+      <div class="si-row"><span class="si-label">费用</span><span class="si-value" style="color:var(--primary)">¥${total}.00${isPrivate ? '（整车价）' : ' / 人'}</span></div>
       ${alipayOrderId ? `<div class="si-row"><span class="si-label">支付状态</span><span class="si-value payment-status-badge payment-paid">✅ 支付宝已支付</span></div>` : ''}
     </div>
     <div style="font-size:12px;color:var(--text-secondary);background:rgba(20,184,122,0.06);border-radius:8px;padding:12px;margin-bottom:16px;line-height:1.7">
@@ -4975,6 +5499,50 @@ function showSuccessModal(orderId, alipayOrderId) {
     <button class="close-modal-btn" onclick="closeModalDirect(); switchPage('orders',null)">查看订单详情 →</button>
   `;
   document.getElementById('modalOverlay').classList.add('active');
+
+  // 保存新订单到本地存储
+  var drivers = [
+    {name:'王师傅', plate:'甘A·8K632', mates:'3位兰大同学同行'},
+    {name:'张师傅', plate:'甘A·7M321', mates:'2位兰大同学已加入'},
+    {name:'李师傅', plate:'甘A·3F215', mates:'1位同学已报名'}
+  ];
+  var d = drivers[Math.floor(Math.random() * drivers.length)];
+  var fromName = '榆中校区', toName = state.selectedRouteName;
+  if (state.selectedRoute === 'custom') {
+    var parts = state.selectedRouteName.split('→');
+    if (parts.length >= 2) {
+      fromName = parts[0].trim();
+      toName = parts[1].trim();
+    }
+  }
+  var newOrder = {
+    id: oid,
+    status: isPrivate ? 'ongoing' : 'waiting',
+    type: state.tripType,
+    from: fromName,
+    to: toName,
+    departTime: date + ' ' + time + ' 出发',
+    arriveTime: '预计到达',
+    pax: state.pax,
+    price: '¥' + total + '.00' + (isPrivate ? '（整车价）' : ' / 人'),
+    driver: d.name + ' · ' + d.plate,
+    driverName: d.name,
+    plate: d.plate,
+    mates: d.mates,
+    hasReviewed: false,
+    reviewStars: 0,
+    reviewTags: '',
+    reviewText: ''
+  };
+  // 自定义路线：保存距离和预估时长，用于后续分享行程准确显示
+  if (state.selectedRoute === 'custom' && state.customDistance) {
+    newOrder.dist = state.customDistance;
+    newOrder.dur = Math.max(5, Math.round(state.customDistance / 0.6)); // 约36km/h估算
+  }
+  var orders = getStoredOrders();
+  orders.unshift(newOrder); // 新订单放最前面
+  saveStoredOrders(orders);
+  renderDynamicOrders();
 }
 
 // ========== Modal ==========
@@ -5019,7 +5587,7 @@ function switchOrderTab(el, status) {
       c.style.display = 'none';
     }
   });
-  // 显示/隐藏空状态
+  // 显示/隐藏空状态（只统计静态订单 + 动态订单总数）
   var empty = document.getElementById('orderEmpty');
   if (empty) empty.style.display = hasVisible ? 'none' : 'block';
 }
@@ -5035,47 +5603,172 @@ function toggleOrderDetail(card) {
   detail.classList.toggle('show');
 }
 
-function shareTrip() { openShareModal('ongoing'); }
-function inviteFriend() { openInviteCard(); }
-function openInviteCard() {
-  const user = getSession();
-  const cardData = {
-    userName: user ? user.name || '同学' : '同学',
-    from: '榆中校区',
-    to: '中川机场',
-    time: '2026-06-28 08:00',
-    price: '¥35',
-    seats: '剩2座'
+function getRouteInfoByName(name) {
+  for (var key in trackRoutes) {
+    if (trackRoutes[key].name === name) return trackRoutes[key];
+  }
+  for (var key in bookRoutes) {
+    if (bookRoutes[key].name === name) {
+      var br = bookRoutes[key];
+      // 有 dist/dur 直接返回，否则按坐标估算（1度约111km，市区道路按35km/h估算）
+      if (br.dist != null && br.dur != null) {
+        return { end: br.end, color: br.color, dist: br.dist, dur: br.dur };
+      }
+      var dx = br.end[0] - START_POINT[0];
+      var dy = br.end[1] - START_POINT[1];
+      var dkm = Math.round(Math.sqrt(dx * dx + dy * dy) * 111);
+      var dm = Math.max(5, Math.round(dkm / 0.6)); // 市区平均约36km/h
+      return { end: br.end, color: br.color, dist: dkm, dur: dm };
+    }
+  }
+  return null;
+}
+function resolveRoute(from, to) {
+  var r = getRouteInfoByName(to) || getRouteInfoByName(from);
+  return {
+    fromCoord: (from === '榆中校区') ? START_POINT : (r ? r.end : START_POINT),
+    toCoord:   (to === '榆中校区')   ? START_POINT : (r ? r.end : [103.622, 36.524]),
+    dist: r ? (r.dist + 'km') : '80km',
+    dur:  r ? (r.dur + '分钟') : '70分钟',
+    color: r ? (r.color || '#1a5fa8') : '#1a5fa8',
   };
-  
-  const cardHTML = `
+}
+function getOrderDataFromCard(card) {
+  var orderId = card.getAttribute('data-id') || '';
+  var orders = getStoredOrders();
+  var stored = orderId ? orders.find(function(o) { return o.id === orderId; }) : null;
+
+  if (stored) {
+    var r;
+    if (stored.dist != null && stored.dur != null) {
+      // 有保存距离的订单（如自定义路线），使用真实数据
+      r = {
+        fromCoord: (stored.from === '榆中校区') ? START_POINT : [103.834, 36.062],
+        toCoord:   (stored.to === '榆中校区')   ? START_POINT : [103.834, 36.062],
+        dist: stored.dist + 'km',
+        dur: stored.dur + '分钟',
+        color: '#1a5fa8'
+      };
+    } else {
+      r = resolveRoute(stored.from || '榆中校区', stored.to || '中川机场');
+    }
+    var driverParts = (stored.driver || '').split('·');
+    var driverName = driverParts[0] ? driverParts[0].trim() : (stored.driverName || '待匹配');
+    // 车牌可能含 ·（如 甘A·5K123），取剩余全部
+    var plate = driverParts.length > 1 ? driverParts.slice(1).join('·').trim() : (stored.plate || '待匹配');
+    return {
+      id: stored.id,
+      from: stored.from || '榆中校区',
+      to: stored.to || '中川机场',
+      fromCoord: r.fromCoord,
+      toCoord: r.toCoord,
+      driver: driverName,
+      plate: plate,
+      color: r.color,
+      dist: r.dist,
+      dur: r.dur,
+      time: stored.departTime || '',
+      status: stored.status === 'ongoing' ? '行程中' : (stored.status === 'waiting' ? '匹配中' : (stored.status === 'matched' ? '已配对' : '已完成')),
+    };
+  }
+
+  // 静态卡片：从 DOM 解析
+  var points = card.querySelectorAll('.order-point-name');
+  var from = points[0] ? points[0].textContent.trim() : '榆中校区';
+  var to   = points[1] ? points[1].textContent.trim() : '';
+  var times = card.querySelectorAll('.order-point-type');
+  var time = times[0] ? times[0].textContent.trim() : '';
+  var statusEl = card.querySelector('.order-status');
+  var status = statusEl ? statusEl.textContent.trim() : '';
+  // 解析司机信息（优先从 .order-detail-row 中找）
+  var driver = '待匹配', plate = '待匹配';
+  var driverRow = card.querySelector('.order-detail-row .od-value');
+  if (driverRow) {
+    var m = driverRow.textContent.match(/([^·]+)\s*·\s*(.+)/);
+    if (m) { driver = m[1].trim(); plate = m[2].trim(); }
+  }
+  // 如果 detail 中没找到，从 meta 中找
+  if (driver === '待匹配') {
+    var metaItems = card.querySelectorAll('.order-meta-item');
+    metaItems.forEach(function(el) {
+      var text = el.textContent;
+      var m = text.match(/(?:司机)?\s*([^·\s]+)\s*·\s*([^·\s]+)/);
+      if (m) { driver = m[1].trim(); plate = m[2].trim(); }
+    });
+  }
+  var r = resolveRoute(from, to);
+  return {
+    id: orderId || 'TRIP_' + Date.now().toString(36).toUpperCase(),
+    from: from, to: to,
+    fromCoord: r.fromCoord, toCoord: r.toCoord,
+    driver: driver, plate: plate, color: r.color,
+    dist: r.dist, dur: r.dur, time: time, status: status,
+  };
+}
+function shareTrip(el) {
+  var card = el ? el.closest('.order-card') : null;
+  if (!card) { openShareModal('ongoing'); return; }
+  var orderData = getOrderDataFromCard(card);
+  openShareModal('ongoing', orderData);
+}
+var currentInviteOrderData = null;
+
+function openInviteCard(el) {
+  var card = el ? el.closest('.order-card') : null;
+  var orderId = card ? card.getAttribute('data-id') : null;
+  var stored = orderId ? getStoredOrders().find(function(o) { return o.id === orderId; }) : null;
+  var fromName = '榆中校区', toName = '中川机场', timeStr = '2026-06-28 08:00', priceStr = '¥35', paxStr = '1人', seatsStr = '剩2座';
+  if (stored) {
+    fromName = stored.from || (stored.route ? stored.route.split('→')[0].trim() : fromName);
+    toName = stored.to || (stored.route ? stored.route.split('→')[1].trim() : toName);
+    timeStr = stored.time || stored.departTime || timeStr;
+    priceStr = stored.price || priceStr;
+    paxStr = (stored.pax || 1) + '人';
+    var seats = 4 - (stored.pax || 1);
+    seatsStr = '剩' + seats + '座';
+  } else if (card) {
+    var points = card.querySelectorAll('.order-point-name');
+    if (points.length >= 2) { fromName = points[0].textContent.trim(); toName = points[1].textContent.trim(); }
+    var metaItems = card.querySelectorAll('.order-meta-item');
+    metaItems.forEach(function(item) {
+      var text = item.textContent;
+      if (text.indexOf('💰') >= 0) priceStr = text.replace('💰', '').trim();
+    });
+    var timeMatch = card.textContent.match(/(\d{4}-\d{2}-\d{2}\s+\d{2}:\d{2})/);
+    if (timeMatch) timeStr = timeMatch[1];
+  }
+  var user = getSession();
+  var userName = user ? user.name || '同学' : '同学';
+  currentInviteOrderData = { userName: userName, from: fromName, to: toName, time: timeStr, price: priceStr, pax: paxStr, seats: seatsStr, id: orderId };
+
+  var cardHTML = `
     <div class="invite-card-brand">
       <span class="brand-icon">🚗</span>
       <span class="brand-text">民兰校途</span>
     </div>
     <div class="invite-card-title">邀请你一起拼车</div>
-    <div class="invite-card-subtitle">${cardData.userName}正在寻找同行伙伴</div>
+    <div class="invite-card-subtitle">${userName}正在寻找同行伙伴</div>
     <div class="invite-card-route-box">
       <div class="invite-card-route">
         <div class="invite-card-point from">
           <div class="point-dot"></div>
-          <span>${cardData.from}</span>
+          <span>${fromName}</span>
         </div>
         <div class="invite-card-line"></div>
         <div class="invite-card-point to">
           <div class="point-dot"></div>
-          <span>${cardData.to}</span>
+          <span>${toName}</span>
         </div>
       </div>
     </div>
     <div class="invite-card-info">
-      <span>🕐 ${cardData.time}</span>
-      <span>💰 ${cardData.price}</span>
-      <span>👥 ${cardData.seats}</span>
+      <span>🕐 ${timeStr}</span>
+      <span>💰 ${priceStr}</span>
+      <span>👥 ${seatsStr}</span>
     </div>
     <div class="invite-card-footer">点击链接立即加入</div>
   `;
-  
+
   document.getElementById('inviteCardContent').innerHTML = cardHTML;
   document.getElementById('inviteCardOverlay').classList.add('active');
 }
@@ -5083,56 +5776,113 @@ function closeInviteCard() {
   document.getElementById('inviteCardOverlay').classList.remove('active');
 }
 function copyInviteCard() {
-  const user = getSession();
-  const shareUrl = window.location.origin;
-  const text = `【民兰校途】${user ? user.name || '同学' : '同学'}邀请你一起拼车！\n\n📍 榆中校区 → 中川机场\n🕐 2026-06-28 08:00\n💰 ¥35/人\n👥 剩2座\n\n点击链接加入：${shareUrl}`;
-  
-  if (navigator.clipboard && navigator.clipboard.writeText) {
-    navigator.clipboard.writeText(text).then(() => {
-      showToast('✅ 已复制到剪贴板，快去分享给好友吧！');
-    }).catch(() => {
-      fallbackCopy(text);
-    });
-  } else {
-    fallbackCopy(text);
+  var d = currentInviteOrderData;
+  var fromName = d ? d.from : '榆中校区';
+  var toName = d ? d.to : '中川机场';
+  var timeStr = d ? d.time : '2026-06-28 08:00';
+  var priceStr = d ? d.price : '¥35';
+  var seatsStr = d ? d.seats : '剩2座';
+  var user = getSession();
+  var baseUrl = (window.location.origin && window.location.origin !== 'null') ? window.location.origin + '/index.html' : 'https://a6867d7b196a4ba3a7a3d9d09f44801a.app.codebuddy.work/index.html';
+  var shareUrl = baseUrl + '#carpool?from=' + encodeURIComponent(fromName) + '&to=' + encodeURIComponent(toName) + '&time=' + encodeURIComponent(timeStr) + '&price=' + encodeURIComponent(priceStr);
+  var text = '【民兰校途】' + (user ? user.name || '同学' : '同学') + '邀请你一起拼车！\n\n📍 ' + fromName + ' → ' + toName + '\n🕐 ' + timeStr + '\n💰 ' + priceStr + '\n👥 ' + seatsStr + '\n\n点击链接加入：' + shareUrl;
+
+  // 策略1：现代 Clipboard API（需要 HTTPS）
+  try {
+    if (navigator.clipboard && navigator.clipboard.writeText) {
+      navigator.clipboard.writeText(text).then(function() {
+        showToast('✅ 已复制到剪贴板，快去分享给好友吧！');
+        return;
+      }).catch(function(err) {
+        console.warn('Clipboard API failed:', err);
+      });
+    }
+  } catch(e) {
+    console.warn('Clipboard API error:', e);
+  }
+
+  // 策略2：传统 execCommand 方式（兼容 file:// 协议）
+  var successByExec = fallbackCopy(text);
+  if (!successByExec) {
+    showManualCopyModal(text);
   }
 }
 function fallbackCopy(text) {
-  const textarea = document.createElement('textarea');
-  textarea.value = text;
-  textarea.style.position = 'fixed';
-  textarea.style.left = '-9999px';
-  document.body.appendChild(textarea);
-  textarea.select();
   try {
-    const successful = document.execCommand('copy');
+    var textarea = document.createElement('textarea');
+    textarea.value = text;
+    textarea.style.cssText = 'position:fixed;left:-9999px;top:0;opacity:0;';
+    document.body.appendChild(textarea);
+    textarea.focus();
+    textarea.select();
+    textarea.setSelectionRange(0, 99999);
+    var successful = document.execCommand('copy');
+    document.body.removeChild(textarea);
     if (successful) {
       showToast('✅ 已复制到剪贴板，快去分享给好友吧！');
-    } else {
-      showToast('⚠️ 复制失败，请长按文本手动复制');
+      return true;
     }
-  } catch (err) {
-    showToast('⚠️ 复制失败，请手动复制');
+    return false;
+  } catch(err) {
+    console.warn('fallbackCopy failed:', err);
+    return false;
   }
-  document.body.removeChild(textarea);
+}
+function showManualCopyModal(text) {
+  var overlay = document.getElementById('manualCopyOverlay');
+  if (!overlay) {
+    overlay = document.createElement('div');
+    overlay.id = 'manualCopyOverlay';
+    overlay.style.cssText = 'position:fixed;top:0;left:0;width:100%;height:100%;background:rgba(0,0,0,0.5);display:flex;align-items:center;justify-content:center;z-index:99999;';
+    overlay.innerHTML = '<div style="background:#fff;border-radius:16px;padding:24px;max-width:400px;width:90%;box-shadow:0 8px 32px rgba(0,0,0,0.2);"><div style="font-size:16px;font-weight:700;margin-bottom:12px;color:#333;">\u{1F4CB} \u590D\u5236\u9080\u8BF7\u5185\u5BB9</div><p style="font-size:13px;color:#666;margin-bottom:12px;">\u8BF7\u957F\u6304\u4E0B\u65B9\u6587\u5B57\uFF0C\u9009\u62E9\u201C\u590D\u5236\u201D\uFF1A</p><textarea id="manualCopyText" readonly style="width:100%;min-height:120px;padding:10px;border:1px solid #ddd;border-radius:8px;font-size:13px;line-height:1.6;resize:vertical;background:#f9f9f9;"></textarea><button onclick="this.closest(\'#manualCopyOverlay\').remove()" style="margin-top:14px;width:100%;padding:10px;background:#1a5fa8;color:#fff;border:none;border-radius:8px;font-size:14px;font-weight:600;cursor:pointer;">\u6211\u77E5\u9053\u4E86</button></div>';
+    document.body.appendChild(overlay);
+  } else {
+    overlay.style.display = 'flex';
+  }
+  var ta = document.getElementById('manualCopyText');
+  if (ta) { ta.value = text; ta.select(); ta.setSelectionRange(0, 99999); }
 }
 function shareInviteCard() {
-  const user = getSession();
-  const shareUrl = window.location.origin;
-  const text = `【民兰校途】${user ? user.name || '同学' : '同学'}邀请你一起拼车！\n\n📍 榆中校区 → 中川机场\n🕐 2026-06-28 08:00\n💰 ¥35/人\n👥 剩2座\n\n点击链接加入：${shareUrl}`;
-  
+  var d = currentInviteOrderData;
+  var fromName = d ? d.from : '榆中校区';
+  var toName = d ? d.to : '中川机场';
+  var timeStr = d ? d.time : '2026-06-28 08:00';
+  var priceStr = d ? d.price : '¥35';
+  var seatsStr = d ? d.seats : '剩2座';
+  var user = getSession();
+  var baseUrl = (window.location.origin && window.location.origin !== 'null') ? window.location.origin + '/index.html' : 'https://a6867d7b196a4ba3a7a3d9d09f44801a.app.codebuddy.work/index.html';
+  var shareUrl = baseUrl + '#carpool?from=' + encodeURIComponent(fromName) + '&to=' + encodeURIComponent(toName) + '&time=' + encodeURIComponent(timeStr) + '&price=' + encodeURIComponent(priceStr);
+  var text = '【民兰校途】' + (user ? user.name || '同学' : '同学') + '邀请你一起拼车！\n\n📍 ' + fromName + ' → ' + toName + '\n🕐 ' + timeStr + '\n💰 ' + priceStr + '\n👥 ' + seatsStr + '\n\n点击链接加入：' + shareUrl;
+
+  // 策略1：系统原生分享（手机端可用）
   if (navigator.share) {
-    navigator.share({
-      title: '邀请拼车',
-      text: text,
-      url: shareUrl
-    }).then(() => {
-      showToast('✅ 分享成功！');
-    }).catch(() => {
-      showToast('⚠️ 分享已取消');
-    });
-  } else {
-    showWechatQRCode(shareUrl);
+    try {
+      navigator.share({
+        title: '邀请拼车',
+        text: text,
+        url: shareUrl
+      }).then(function() {
+        showToast('✅ 分享成功！');
+        return;
+      }).catch(function(err) {
+        console.warn('navigator.share cancelled:', err);
+      });
+    } catch(e) { /* 忽略 */ }
+  }
+
+  // 策略2：无论上面是否成功，都确保复制到剪贴板（微信环境尤其需要）
+  var successByExec = fallbackCopy(text);
+
+  if (/MicroMessenger/i.test(navigator.userAgent)) {
+    // 微信环境：显示分享引导
+    var wxGuide = document.getElementById('wxShareGuide');
+    if (wxGuide) wxGuide.classList.add('active');
+  }
+
+  if (!successByExec) {
+    showManualCopyModal(text);
+  } else if (!/MicroMessenger/i.test(navigator.userAgent) && !navigator.share) {
+    showToast('💬 邀请内容已复制，请打开微信粘贴发送给好友');
   }
 }
 function showWechatQRCode(url) {
@@ -5157,7 +5907,39 @@ function showWechatQRCode(url) {
   document.body.appendChild(qrModal);
 }
 function callDriver() {
-  showToast('📞 正在拨打司机电话…');
+  var phone = '18091229260';
+  showToast('📞 正在拨打司机电话 ' + phone + '…');
+  setTimeout(function() {
+    window.location.href = 'tel:' + phone;
+  }, 800);
+}
+function confirmArrival(btn) {
+  var card = btn.closest('.order-card');
+  if (!card) return;
+  var orderId = card.getAttribute('data-id');
+  var statusEl = card.querySelector('.order-status');
+  if (statusEl) {
+    statusEl.textContent = '✅ 已完成';
+    statusEl.className = 'order-status status-done';
+  }
+  card.setAttribute('data-status', 'done');
+
+  var actions = card.querySelector('.order-actions');
+  if (actions) {
+    actions.innerHTML = '<div class="order-action-btn btn-review" onclick="event.stopPropagation();showReview(\'' + orderId + '\',\'王师傅\',\'甘A·8K632\',\'拼车\',\'兰州西站→榆中校区\',0,\'\',\'\')">💬 去评价</div><div class="order-action-btn btn-rebook" onclick="event.stopPropagation();rebook()">🔄 再次预约</div>';
+  }
+
+  // 同步更新 localStorage 中的动态订单
+  if (orderId) {
+    var orders = getStoredOrders();
+    var idx = orders.findIndex(function(o) { return o.id === orderId; });
+    if (idx !== -1) {
+      orders[idx].status = 'done';
+      saveStoredOrders(orders);
+    }
+  }
+
+  showToast('✅ 已确认到达，欢迎评价本次行程');
 }
 function callEmergency() {
   showToast('🆘 已向平台发送紧急求助信号！');
@@ -5190,13 +5972,15 @@ function getActiveTripData() {
 }
 
 // 公网部署地址（CloudStudio），分享链接统一使用此地址
-var SHARE_BASE_URL = 'https://ff524360e357441b8be40e5c98135ff5.app.codebuddy.work/share.html';
+var SHARE_BASE_URL = 'https://a6867d7b196a4ba3a7a3d9d09f44801a.app.codebuddy.work/share.html';
 
 var shareMapInstance = null;
 var shareCarMarker = null;
 
-function openShareModal(cardStatus) {
-  if (cardStatus === 'ongoing') {
+function openShareModal(cardStatus, orderData) {
+  if (orderData) {
+    currentShareData = orderData;
+  } else if (cardStatus === 'ongoing') {
     currentShareData = getActiveTripData();
   } else {
     currentShareData = {
@@ -5218,8 +6002,20 @@ function openShareModal(cardStatus) {
   var enc = encodeURIComponent;
   var numDist = (currentShareData.dist || '').replace(/[^0-9.]/g, '');
   var numDur = (currentShareData.dur || '').replace(/[^0-9.]/g, '');
-  var dateMatch = (currentShareData.time || '').match(/(\d{2})-(\d{2})\D*(\d{2}):(\d{2})/);
-  var shortTime = dateMatch ? dateMatch[1] + dateMatch[2] + dateMatch[3] + dateMatch[4] : '';
+  // 时间解析：支持 2026-06-28 23:00、06-28 23:00、06月28日 23:00 等多种格式
+  var timeStr = currentShareData.time || '';
+  var displayTime = '';
+  var fullMatch = timeStr.match(/(\d{4})-(\d{2})-(\d{2})\D*(\d{2}):(\d{2})/);
+  if (fullMatch) {
+    displayTime = fullMatch[2] + '月' + fullMatch[3] + '日 ' + fullMatch[4] + ':' + fullMatch[5];
+  } else {
+    var shortMatch = timeStr.match(/(\d{2})-(\d{2})\D*(\d{2}):(\d{2})/);
+    if (shortMatch) {
+      displayTime = shortMatch[1] + '月' + shortMatch[2] + '日 ' + shortMatch[3] + ':' + shortMatch[4];
+    } else {
+      displayTime = timeStr.replace(/^\s+|\s+$/g, '').slice(0, 30);
+    }
+  }
   var statusMap = { '等待中': 0, '已配对': 1, '行程中': 2, '已完成': 3, '已取消': 4, '匹配中': 0 };
   var stCode = statusMap[currentShareData.status] != null ? statusMap[currentShareData.status] : 2;
   var encodedParams = [
@@ -5229,7 +6025,7 @@ function openShareModal(cardStatus) {
     'p=' + enc(currentShareData.plate),
     'km=' + numDist,
     'min=' + numDur,
-    'tm=' + shortTime,
+    'tm=' + enc(displayTime),
     'st=' + stCode,
     'fa=' + currentShareData.fromCoord[0] + ',' + currentShareData.fromCoord[1],
     'ta=' + currentShareData.toCoord[0] + ',' + currentShareData.toCoord[1],
@@ -6280,7 +7076,18 @@ function cancelOrder(el) {
   }
   
   showToast('✅ 订单已成功取消');
-  
+
+  // 同步更新 localStorage 中的动态订单
+  var orderId = card.getAttribute('data-id');
+  if (orderId) {
+    var orders = getStoredOrders();
+    var idx = orders.findIndex(function(o) { return o.id === orderId; });
+    if (idx !== -1) {
+      orders[idx].status = 'cancelled';
+      saveStoredOrders(orders);
+    }
+  }
+
   // 高亮"已取消"标签
   var cancelledTab = document.querySelector('.order-tab:nth-child(5)');
   if (cancelledTab) switchOrderTab(cancelledTab, 'cancelled');
@@ -6309,33 +7116,75 @@ function showReview(orderId, driverName, plate, tripType, route, existScore, exi
   };
   var d = _ratingData[orderId];
 
-  // 星级不预设，清空显示
-  _renderRatingStars(0);
+  if (isView) {
+    // ========== 查看模式（只读，不可编辑） ==========
+    d.score = existScore;
+    d.tags = existTags ? existTags.split(',') : [];
+    d.text = existText || '';
 
-  // 标签重置为好评池（默认）
-  var tagsWrap = document.getElementById('ratingTagsWrap');
-  var goodTags = ['准时出发','驾驶稳','态度好','车内整洁','安全驾驶','路线熟悉','不催促','帮拿行李'];
-  tagsWrap.innerHTML = goodTags.map(function(t) {
-    return '<div class="rating-tag" onclick="toggleRatingTag(this)">' + t + '</div>';
-  }).join('');
+    // 显示已有星级（不可点击）
+    _renderRatingStars(existScore);
+    var stars = document.getElementById('ratingStarsRow').querySelectorAll('.star-btn');
+    stars.forEach(function(s) {
+      s.style.pointerEvents = 'none';
+      s.style.cursor = 'default';
+    });
 
-  // 文字框清空，完全可输入
-  var textarea = document.getElementById('ratingTextarea');
-  textarea.value = '';
-  textarea.removeAttribute('readonly');
-  textarea.style.pointerEvents = '';
-  textarea.style.background = '';
+    // 显示已有标签（不可点击）
+    var tagsWrap = document.getElementById('ratingTagsWrap');
+    var allTags = existTags ? existTags.split(',') : [];
+    if (allTags.length > 0) {
+      tagsWrap.innerHTML = allTags.map(function(t) {
+        return '<div class="rating-tag active" style="pointer-events:none;cursor:default">' + t + '</div>';
+      }).join('');
+    } else {
+      tagsWrap.innerHTML = '<div style="color:var(--text-light);font-size:13px;padding:8px 0;">无标签评价</div>';
+    }
+    document.getElementById('ratingTagsTitle').textContent = '服务亮点';
 
-  // 统一：查看模式也当作可评价模式（让用户自己填星、自己写）
-  var sheet = document.getElementById('ratingSheet');
-  sheet.classList.remove('rating-view-mode');
-  document.getElementById('ratingTagsTitle').textContent = '服务亮点（可多选）';
-  document.getElementById('ratingTextareaLabel').textContent = '说说你的感受（选填）';
-  var submitBtn = document.getElementById('ratingSubmitBtn');
-  submitBtn.style.display = 'block';
-  submitBtn.textContent = '提交评价';
-  submitBtn.disabled = false;
-  submitBtn.style.background = '';
+    // 文字框显示已有评价（只读）
+    var textarea = document.getElementById('ratingTextarea');
+    textarea.value = existText || '（未填写文字评价）';
+    textarea.setAttribute('readonly', true);
+    textarea.style.pointerEvents = 'none';
+    textarea.style.background = '#f1f5f9';
+    document.getElementById('ratingTextareaLabel').textContent = '评价内容';
+
+    // 隐藏提交按钮
+    var submitBtn = document.getElementById('ratingSubmitBtn');
+    submitBtn.style.display = 'none';
+  } else {
+    // ========== 评价模式（可编辑） ==========
+    // 星级不预设，清空显示
+    _renderRatingStars(0);
+    var stars = document.getElementById('ratingStarsRow').querySelectorAll('.star-btn');
+    stars.forEach(function(s) {
+      s.style.pointerEvents = '';
+      s.style.cursor = '';
+    });
+
+    // 标签重置为好评池（默认）
+    var tagsWrap = document.getElementById('ratingTagsWrap');
+    var goodTags = ['准时出发','驾驶稳','态度好','车内整洁','安全驾驶','路线熟悉','不催促','帮拿行李'];
+    tagsWrap.innerHTML = goodTags.map(function(t) {
+      return '<div class="rating-tag" onclick="toggleRatingTag(this)">' + t + '</div>';
+    }).join('');
+
+    // 文字框清空，完全可输入
+    var textarea = document.getElementById('ratingTextarea');
+    textarea.value = '';
+    textarea.removeAttribute('readonly');
+    textarea.style.pointerEvents = '';
+    textarea.style.background = '';
+
+    document.getElementById('ratingTagsTitle').textContent = '服务亮点（可多选）';
+    document.getElementById('ratingTextareaLabel').textContent = '说说你的感受（选填）';
+    var submitBtn = document.getElementById('ratingSubmitBtn');
+    submitBtn.style.display = 'block';
+    submitBtn.textContent = '提交评价';
+    submitBtn.disabled = false;
+    submitBtn.style.background = '';
+  }
 
   document.getElementById('ratingOverlay').classList.add('active');
   document.body.style.overflow = 'hidden';
@@ -6496,6 +7345,14 @@ var trackRoutes = {
     driver: '李师傅', plate: '甘A·2H851', avatar: '李',
     color: '#ff6b35',
     dist: 45, dur: 45,
+  },
+  yuzhong: {
+    name: '榆中高铁站',
+    start: [104.125, 35.93],
+    end: [104.115, 35.88],
+    driver: '刘师傅', plate: '甘A·6D902', avatar: '刘',
+    color: '#e67e22',
+    dist: 10, dur: 15,
   },
 };
 // 预约出行路线数据（起点均为榆中校区）
@@ -6889,8 +7746,12 @@ function switchTrackRoute(routeKey) {
 
 // ========== Book Map (预约出行地图) ==========
 function initBookMap() {
-  if (bookMapInitialized) {
-    // 已初始化，刷新路线
+  // 如果标记为已初始化但地图对象不存在（可能页面刷新或 DOM 重建），重置标志重新初始化
+  if (bookMapInitialized && !bookMap) {
+    bookMapInitialized = false;
+  }
+  // 如果地图已初始化且对象有效，直接刷新路线
+  if (bookMapInitialized && bookMap) {
     drawBookRoute();
     return;
   }
@@ -6957,6 +7818,10 @@ function _doInitBookMap(container) {
 function drawBookRoute() {
   if (!bookMap) return;
 
+  // 确保 loading 被隐藏（双重保险）
+  var loading = document.getElementById('bookMapLoading');
+  if (loading) loading.classList.add('hidden');
+
   var routeKey = state.selectedRoute;
   var route = bookRoutes[routeKey];
 
@@ -6964,6 +7829,81 @@ function drawBookRoute() {
   if (bookMapPolyline) { bookMapPolyline.setMap(null); bookMapPolyline = null; }
   if (bookMapStartMarker) { bookMapStartMarker.setMap(null); bookMapStartMarker = null; }
   if (bookMapEndMarker) { bookMapEndMarker.setMap(null); bookMapEndMarker = null; }
+
+  // 自定义路线：使用估算时保存的坐标，如果没有则尝试解析
+  if (routeKey === 'custom') {
+    var customStart = state.customStartCoord || START_POINT;
+    var customEnd = state.customEndCoord || [103.834, 36.062];
+    var customFrom = (document.getElementById('customFrom') || {}).value || '榆中校区';
+    var customTo = (document.getElementById('customTo') || {}).value || '目的地';
+
+    bookMapStartMarker = new AMap.Marker({
+      position: customStart,
+      content: '<div style="background:#1a5fa8;color:#fff;padding:3px 10px;border-radius:12px;font-size:11px;font-weight:700;white-space:nowrap;">📍 ' + customFrom + '</div>',
+      offset: new AMap.Pixel(-35, -25),
+    });
+    bookMap.add(bookMapStartMarker);
+
+    bookMapEndMarker = new AMap.Marker({
+      position: customEnd,
+      content: '<div style="background:#10b981;color:#fff;padding:3px 10px;border-radius:12px;font-size:11px;font-weight:700;white-space:nowrap;">🏁 ' + customTo + '</div>',
+      offset: new AMap.Pixel(-35, -25),
+    });
+    bookMap.add(bookMapEndMarker);
+
+    AMap.plugin(['AMap.Driving', 'AMap.Walking'], function() {
+      var driving = new AMap.Driving({ map: null, panel: null, autoFitView: false });
+      driving.search(customStart, customEnd, function(status, result) {
+        if (status === 'complete' && result.routes && result.routes[0]) {
+          var pathPoints = [];
+          result.routes[0].steps.forEach(function(step) {
+            if (step.path) pathPoints = pathPoints.concat(step.path);
+          });
+          bookMapPolyline = new AMap.Polyline({
+            path: pathPoints,
+            strokeColor: '#1a5fa8',
+            strokeWeight: 5,
+            strokeOpacity: 0.75,
+            lineJoin: 'round',
+            showDir: true,
+          });
+          bookMap.add(bookMapPolyline);
+          bookMap.setFitView(null, false, [30, 30, 30, 30]);
+        } else {
+          // fallback: 画直线
+          var midLng = (customStart[0] + customEnd[0]) / 2;
+          var midLat = (customStart[1] + customEnd[1]) / 2;
+          var dLng = (customEnd[0] - customStart[0]) * 111 * Math.cos((customStart[1] + customEnd[1]) / 2 * Math.PI / 180);
+          var dLat = (customEnd[1] - customStart[1]) * 111;
+          var distKm = Math.sqrt(dLng * dLng + dLat * dLat);
+          var off = Math.min(distKm * 0.03, 0.08);
+          var pLng = -(customEnd[1] - customStart[1]) * off;
+          var pLat = (customEnd[0] - customStart[0]) * off;
+          var curvePath = [
+            customStart,
+            [customStart[0] + (customEnd[0] - customStart[0]) * 0.2 + pLng * 0.4, customStart[1] + (customEnd[1] - customStart[1]) * 0.2 + pLat * 0.4],
+            [customStart[0] + (customEnd[0] - customStart[0]) * 0.45 + pLng * 0.8, customStart[1] + (customEnd[1] - customStart[1]) * 0.45 + pLat * 0.8],
+            [midLng + pLng, midLat + pLat],
+            [customStart[0] + (customEnd[0] - customStart[0]) * 0.6 - pLng * 0.5, customStart[1] + (customEnd[1] - customStart[1]) * 0.6 - pLat * 0.5],
+            [customStart[0] + (customEnd[0] - customStart[0]) * 0.85 - pLng * 0.2, customStart[1] + (customEnd[1] - customStart[1]) * 0.85 - pLat * 0.2],
+            customEnd,
+          ];
+          bookMapPolyline = new AMap.Polyline({
+            path: curvePath,
+            strokeColor: '#1a5fa8',
+            strokeWeight: 5,
+            strokeOpacity: 0.75,
+            strokeStyle: 'dashed',
+            lineJoin: 'round',
+            showDir: true,
+          });
+          bookMap.add(bookMapPolyline);
+          bookMap.setFitView(null, false, [30, 30, 30, 30]);
+        }
+      });
+    });
+    return;
+  }
 
   var endPoint = route ? route.end : [103.834, 36.062];
   var color = route ? route.color : '#1a5fa8';
@@ -7087,6 +8027,10 @@ function showRoutePlan() {
     showToast('⚠️ 请选择出行日期');
     return;
   }
+  if (state.selectedRoute === 'custom' && state.selectedRoutePrice <= 0) {
+    showToast('⚠️ 请先填写起点和终点并点击"估算价格"');
+    return;
+  }
 
   // 隐藏所有 step-content
   document.querySelectorAll('#page-book .step-content').forEach(function(s) { s.classList.remove('active'); });
@@ -7094,7 +8038,13 @@ function showRoutePlan() {
   var view = document.getElementById('routePlanView');
   view.classList.add('active');
 
-  // 更新目的地名称
+  // 更新起终点名称
+  var startNameEl = document.getElementById('planStartName');
+  if (startNameEl) {
+    startNameEl.textContent = state.selectedRoute === 'custom'
+      ? ((document.getElementById('customFrom') || {}).value || '榆中校区')
+      : '榆中校区（兰州大学）';
+  }
   document.getElementById('planDestName').textContent = state.selectedRouteName;
 
   // 重置交换状态
@@ -7116,6 +8066,9 @@ function closeRoutePlan() {
   document.getElementById('routePlanView').classList.remove('active');
   // 恢复 step-content-1 显示
   document.getElementById('step-content-1').classList.add('active');
+  // 恢复起点名称为默认
+  var startNameEl = document.getElementById('planStartName');
+  if (startNameEl) startNameEl.textContent = '榆中校区（兰州大学）';
   // 清理地图
   resetRoutePlanMap();
   window.scrollTo(0, 0);
@@ -7124,16 +8077,19 @@ function closeRoutePlan() {
 function swapPlanLocations() {
   routePlanSwapped = !routePlanSwapped;
   var destName = document.getElementById('planDestName');
+  var fromLine = document.querySelectorAll('.plan-loc-line')[0];
+  var fromName = fromLine ? fromLine.querySelector('.plan-loc-name') : null;
+  var isCustom = state.selectedRoute === 'custom';
+  var customFrom = (document.getElementById('customFrom') || {}).value || '起点';
+  var customTo = (document.getElementById('customTo') || {}).value || '终点';
+
   if (routePlanSwapped) {
-    destName.textContent = '榆中校区';
-    // 显示交换提示
-    var fromLine = document.querySelectorAll('.plan-loc-line')[0];
-    fromLine.querySelector('.plan-loc-name').textContent = state.selectedRouteName;
+    destName.textContent = isCustom ? customFrom : '榆中校区';
+    if (fromName) fromName.textContent = isCustom ? customTo : state.selectedRouteName;
     showToast('🔄 已交换起终点');
   } else {
-    destName.textContent = state.selectedRouteName;
-    var fromLine2 = document.querySelectorAll('.plan-loc-line')[0];
-    fromLine2.querySelector('.plan-loc-name').textContent = '榆中校区（兰州大学）';
+    destName.textContent = isCustom ? customTo : state.selectedRouteName;
+    if (fromName) fromName.textContent = isCustom ? customFrom : '榆中校区（兰州大学）';
     showToast('🔄 已恢复默认方向');
   }
   // 重新规划路线
@@ -7196,8 +8152,18 @@ function _doInitRoutePlanMap(container) {
 }
 
 function getPlanEndPoint() {
+  if (state.selectedRoute === 'custom') {
+    return state.customEndCoord || [103.834, 36.062];
+  }
   var route = bookRoutes[state.selectedRoute];
   return route ? route.end : [103.834, 36.062];
+}
+
+function getPlanStartPoint() {
+  if (state.selectedRoute === 'custom') {
+    return state.customStartCoord || START_POINT;
+  }
+  return START_POINT;
 }
 
 function getPlanRouteColor() {
@@ -7214,18 +8180,30 @@ function fetchPlanRoutes() {
   if (routePlanStartMarker) { routePlanStartMarker.setMap(null); routePlanStartMarker = null; }
   if (routePlanEndMarker) { routePlanEndMarker.setMap(null); routePlanEndMarker = null; }
 
-  var endPoint = getPlanEndPoint();
-  var startLabel, endLabel;
-  var startCoord, endCoord;
+  var startCoord, endCoord, startLabel, endLabel;
 
-  if (routePlanSwapped) {
-    startCoord = endPoint;
+  if (state.selectedRoute === 'custom') {
+    var customFrom = (document.getElementById('customFrom') || {}).value || '起点';
+    var customTo = (document.getElementById('customTo') || {}).value || '终点';
+    if (routePlanSwapped) {
+      startCoord = state.customEndCoord || [103.834, 36.062];
+      endCoord = state.customStartCoord || START_POINT;
+      startLabel = customTo;
+      endLabel = customFrom;
+    } else {
+      startCoord = state.customStartCoord || START_POINT;
+      endCoord = state.customEndCoord || [103.834, 36.062];
+      startLabel = customFrom;
+      endLabel = customTo;
+    }
+  } else if (routePlanSwapped) {
+    startCoord = getPlanEndPoint();
     endCoord = START_POINT;
     startLabel = state.selectedRouteName;
     endLabel = '榆中校区';
   } else {
     startCoord = START_POINT;
-    endCoord = endPoint;
+    endCoord = getPlanEndPoint();
     startLabel = '榆中校区';
     endLabel = state.selectedRouteName;
   }
@@ -8041,6 +9019,120 @@ document.addEventListener('DOMContentLoaded', function() {
 // 页面关闭时清理摄像头
 window.addEventListener('beforeunload', function() { faCleanup(); });
 
+// ========== 订单本地存储 ==========
+function getStoredOrders() {
+  try { return JSON.parse(localStorage.getItem('ml_orders') || '[]'); } catch(e) { return []; }
+}
+function saveStoredOrders(orders) {
+  localStorage.setItem('ml_orders', JSON.stringify(orders));
+}
+
+function renderDynamicOrders() {
+  var container = document.getElementById('dynamicOrders');
+  if (!container) return;
+  container.innerHTML = '';
+  var orders = getStoredOrders();
+  orders.forEach(function(order) {
+    container.insertAdjacentHTML('beforeend', createDynamicOrderCard(order));
+  });
+}
+
+function createDynamicOrderCard(order) {
+  var isCarpool = order.type === 'carpool';
+  var status = order.status;
+  var statusMap = {
+    'ongoing': {label: '🚗 行程中', cls: 'status-ongoing'},
+    'waiting': {label: '⏳ 匹配中', cls: 'status-waiting'},
+    'matched': {label: '🤝 已配对', cls: 'status-matched'},
+    'done':    {label: '✅ 已完成', cls: 'status-done'},
+    'cancelled':{label: '✕ 已取消', cls: 'status-cancelled'}
+  };
+  var s = statusMap[status] || statusMap['waiting'];
+  var typeLabel = isCarpool ? '🤝 拼车' : '🚙 独立约车';
+  var paxLabel = isCarpool ? '👥 ' + order.pax + ' 人' : '👤 ' + order.pax + ' 人';
+
+  var html = '<div class="order-card" data-id="' + order.id + '" data-status="' + status + '" onclick="toggleOrderDetail(this)">';
+  html += '<div class="order-card-header"><div class="order-id">订单 #' + order.id + '</div>';
+  html += '<div class="order-status ' + s.cls + '">' + s.label + '</div></div>';
+
+  html += '<div class="order-route-bar">';
+  html += '<div class="order-point"><div style="display:flex;align-items:center;gap:6px;margin-bottom:4px">';
+  html += '<div class="order-point-dot dot-from"></div><div class="order-point-name">' + order.from + '</div></div>';
+  html += '<div class="order-point-type">' + order.departTime + '</div></div>';
+  html += '<div class="order-arrow">→</div>';
+  html += '<div class="order-point"><div style="display:flex;align-items:center;gap:6px;margin-bottom:4px">';
+  html += '<div class="order-point-dot dot-to"></div><div class="order-point-name">' + order.to + '</div></div>';
+  html += '<div class="order-point-type">' + order.arriveTime + '</div></div>';
+  html += '</div>';
+
+  html += '<div class="order-meta">';
+  html += '<div class="order-meta-item">' + typeLabel + '</div>';
+  html += '<div class="order-meta-item">' + paxLabel + '</div>';
+  html += '<div class="order-meta-item">💰 ' + order.price + '</div>';
+  if (status === 'ongoing') {
+    html += '<div class="order-meta-item" style="color:var(--secondary)">📍 距离到达约 15km</div>';
+  } else if (status === 'waiting') {
+    html += '<div class="order-meta-item" style="color:#d97706">🤖 智能匹配中…</div>';
+  } else if (status === 'matched') {
+    html += '<div class="order-meta-item" style="color:var(--primary)">🎉 配对成功，待出发</div>';
+  } else if (status === 'done') {
+    html += '<div class="order-meta-item"><span class="stars">★★★★★</span> ' + (order.hasReviewed ? '已评价' : '去评价') + '</div>';
+  } else if (status === 'cancelled') {
+    html += '<div class="order-meta-item" style="color:var(--text-secondary)">✕ 已取消</div>';
+  }
+  html += '</div>';
+
+  html += '<div class="order-detail">';
+  if (order.driver) {
+    html += '<div class="order-detail-row"><span class="od-label">司机</span><span class="od-value">' + order.driver + '</span></div>';
+  }
+  if (isCarpool && order.mates) {
+    html += '<div class="order-detail-row"><span class="od-label">拼友</span><span class="od-value">' + order.mates + '</span></div>';
+  }
+  if (status === 'ongoing') {
+    html += '<div class="order-detail-row"><span class="od-label">实况</span><span class="od-value" style="color:var(--secondary)">正在前往' + order.to + '，预计到达</span></div>';
+  } else if (status === 'waiting') {
+    html += '<div class="order-detail-row"><span class="od-label">行程</span><span class="od-value">' + order.from + ' → ' + order.to + '</span></div>';
+    html += '<div class="order-detail-row"><span class="od-label">状态</span><span class="od-value" style="color:#d97706">系统正在附近匹配同路线同学拼车</span></div>';
+    html += '<div class="order-detail-row"><span class="od-label">提示</span><span class="od-value">匹配截止至出发前2小时，届时自动确认</span></div>';
+  } else if (status === 'matched') {
+    html += '<div class="order-detail-row"><span class="od-label">司机</span><span class="od-value">' + order.driver + '</span></div>';
+    html += '<div class="order-detail-row"><span class="od-label">拼友</span><span class="od-value">' + order.mates + '</span></div>';
+    html += '<div class="order-detail-row"><span class="od-label">车程</span><span class="od-value">约45km · 预计60分钟</span></div>';
+  } else if (status === 'done') {
+    html += '<div class="order-detail-row"><span class="od-label">司机</span><span class="od-value">' + order.driver + '</span></div>';
+    html += '<div class="order-detail-row"><span class="od-label">车程</span><span class="od-value">约50km · 实际用时53分钟</span></div>';
+  }
+  html += '</div>';
+
+  html += '<div class="order-actions">';
+  if (status === 'ongoing') {
+    html += '<div class="order-action-btn btn-share-trip" onclick="event.stopPropagation();shareTrip(this)">📤 分享行程</div>';
+    html += '<div class="order-action-btn btn-share-trip" onclick="event.stopPropagation();callDriver()">📞 联系司机</div>';
+    html += '<div class="order-action-btn" style="background:rgba(20,184,129,0.08);color:#14b87a" onclick="event.stopPropagation();confirmArrival(this)">✅ 确认到达</div>';
+    html += '<div class="order-action-btn" style="background:rgba(220,38,38,0.08);color:#dc2626" onclick="event.stopPropagation();callEmergency()">🆘 紧急求助</div>';
+  } else if (status === 'waiting') {
+    html += '<div class="order-action-btn btn-share-trip" onclick="event.stopPropagation();openInviteCard(this)">📢 邀请同学拼</div>';
+    html += '<div class="order-action-btn btn-cancel" onclick="event.stopPropagation();cancelOrder(this)">✕ 取消订单</div>';
+  } else if (status === 'matched') {
+    html += '<div class="order-action-btn btn-share-trip" onclick="event.stopPropagation();openInviteCard(this)">📢 邀请同学拼</div>';
+    html += '<div class="order-action-btn btn-share-trip" onclick="event.stopPropagation();callDriver()">📞 联系司机</div>';
+    html += '<div class="order-action-btn btn-cancel" onclick="event.stopPropagation();cancelOrder(this)">✕ 取消订单</div>';
+  } else if (status === 'done') {
+    if (order.hasReviewed) {
+      html += '<div class="order-action-btn btn-review" onclick="event.stopPropagation();showReview(\'' + order.id + '\',\'' + order.driverName + '\',\'' + order.plate + '\',\'' + (isCarpool ? '拼车' : '独立约车') + '\',\'' + order.from + '→' + order.to + '\',' + order.reviewStars + ',\'' + order.reviewTags + '\',\'' + order.reviewText + '\')">💬 查看评价</div>';
+    } else {
+      html += '<div class="order-action-btn btn-review" onclick="event.stopPropagation();showReview(\'' + order.id + '\',\'' + order.driverName + '\',\'' + order.plate + '\',\'' + (isCarpool ? '拼车' : '独立约车') + '\',\'' + order.from + '→' + order.to + '\',0,\'\',\'\')">💬 去评价</div>';
+    }
+    html += '<div class="order-action-btn btn-rebook" onclick="event.stopPropagation();rebook()">🔄 再次预约</div>';
+  } else if (status === 'cancelled') {
+    html += '<div class="order-action-btn btn-rebook" onclick="event.stopPropagation();rebook()">🔄 重新预约</div>';
+  }
+  html += '</div>';
+  html += '</div>';
+  return html;
+}
+
 // ========== Init ==========
 (function init() {
   // 分享链接追踪页 → 跳过登录和首页初始化
@@ -8056,6 +9148,43 @@ window.addEventListener('beforeunload', function() { faCleanup(); });
   } else {
     document.getElementById('loginContainer').classList.remove('hidden');
   }
+
+  // 检测 hash 参数，自动打开拼车页面
+  function checkCarpoolHash() {
+    const hash = window.location.hash;
+    if (hash.startsWith('#carpool')) {
+      const hashParams = new URLSearchParams(hash.substring(8));
+      const carpoolParams = {
+        from: hashParams.get('from'),
+        to: hashParams.get('to'),
+        time: hashParams.get('time'),
+        price: hashParams.get('price')
+      };
+      
+      if (getSession()) {
+        setTimeout(function() {
+          switchPage('book', null);
+          if (carpoolParams.from && carpoolParams.to) {
+            document.getElementById('bookFrom').value = carpoolParams.from;
+            document.getElementById('bookTo').value = carpoolParams.to;
+          }
+          if (carpoolParams.time) {
+            const timeParts = carpoolParams.time.split(' ');
+            if (timeParts.length >= 2) {
+              document.getElementById('bookDate').value = timeParts[0];
+              document.getElementById('bookTime').value = timeParts[1];
+            }
+          }
+          showToast('🔗 已为你打开拼车页面', 3000);
+        }, 300);
+      } else {
+        window.__AUTO_CARPOOL_AFTER_LOGIN = true;
+        window.__CARPOOL_PARAMS = carpoolParams;
+      }
+    }
+  }
+  
+  checkCarpoolHash();
 
   // Set default date to today
   const today = new Date().toISOString().split('T')[0];
@@ -8075,6 +9204,9 @@ window.addEventListener('beforeunload', function() { faCleanup(); });
 
   // Initial price
   updatePricePreview();
+
+  // 初始化动态订单列表
+  renderDynamicOrders();
 
   // 支持 Enter 键登录
   document.getElementById('loginPhone').addEventListener('keydown', function(e) {
