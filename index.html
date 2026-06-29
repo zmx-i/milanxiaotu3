@@ -5937,8 +5937,18 @@ function confirmArrival(btn) {
   showToast('✅ 已确认到达，欢迎评价本次行程');
 }
 function callEmergency() {
-  showToast('🆘 已向平台发送紧急求助信号！');
-  setTimeout(() => showToast('📞 客服正在响应，请保持镇定'), 1500);
+  var phone = '18097229260';
+  var telLink = 'tel:' + phone;
+  
+  if (navigator.userAgent.match(/(iPhone|iPod|iPad|Android)/)) {
+    window.location.href = telLink;
+    showToast('📞 正在拨打客服电话 ' + phone + '…');
+  } else {
+    showToast('📞 客服电话：' + phone);
+    setTimeout(function() {
+      window.location.href = telLink;
+    }, 500);
+  }
 }
 
 // ========== Real Share Functions ==========
