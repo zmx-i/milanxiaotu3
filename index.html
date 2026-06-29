@@ -3880,20 +3880,64 @@ async function apiGet(url, needAuth = false) {
   }
   
   if (url === '/api/driver/dashboard') {
+    const user = getSession();
+    const driverPhone = user?.phone || '13800003333';
+    
+    let storedOrders = getStoredOrders();
+    storedOrders = storedOrders.map(o => ({
+      id: o.id,
+      status: o.status || 'pending',
+      from: o.from || '榆中校区',
+      to: o.to || '中川机场',
+      time: o.departTime || o.time || '待定',
+      passengers: o.pax || 1,
+      price: typeof o.price === 'string' ? parseInt(o.price.replace(/[¥,（）整车价]/g, '')) : (o.price || 0),
+      passenger: o.passengerName || '同学',
+      phone: o.passengerPhone || '',
+      driverPhone: o.driverPhone || '13800003333'
+    }));
+    
+    let allOrders = [...mockDriverOrders, ...storedOrders];
+    allOrders = allOrders.filter(o => o.driverPhone === driverPhone);
+    
+    const newOrders = allOrders.filter(o => o.status === 'pending' || o.status === 'waiting');
+    const activeOrders = allOrders.filter(o => o.status === 'accepted' || o.status === 'ongoing');
+    
     return {
       success: true,
       stats: { today_orders: 2, today_earnings: 140, rating: '4.9', completion_rate: 100, week_earnings: 560 },
-      new_orders: mockDriverOrders.filter(o => o.status === 'pending'),
-      active_orders: [],
+      new_orders: newOrders,
+      active_orders: activeOrders,
       recent_earnings: mockDriverEarnings.history.slice(0, 5),
     };
   }
   
   if (url.includes('/api/driver/orders')) {
     const status = url.split('status=')[1];
-    let orders = mockDriverOrders;
-    if (status === 'pending') orders = orders.filter(o => o.status === 'pending');
-    if (status === 'completed') orders = orders.filter(o => o.status === 'completed');
+    const user = getSession();
+    const driverPhone = user?.phone || '13800003333';
+    
+    let storedOrders = getStoredOrders();
+    storedOrders = storedOrders.map(o => ({
+      id: o.id,
+      status: o.status || 'pending',
+      from: o.from || '榆中校区',
+      to: o.to || '中川机场',
+      time: o.departTime || o.time || '待定',
+      passengers: o.pax || 1,
+      price: typeof o.price === 'string' ? parseInt(o.price.replace(/[¥,（）整车价]/g, '')) : (o.price || 0),
+      passenger: o.passengerName || '同学',
+      phone: o.passengerPhone || '',
+      driverPhone: o.driverPhone || '13800003333'
+    }));
+    
+    let orders = [...mockDriverOrders, ...storedOrders];
+    orders = orders.filter(o => o.driverPhone === driverPhone);
+    
+    if (status === 'pending') orders = orders.filter(o => o.status === 'pending' || o.status === 'waiting');
+    if (status === 'completed') orders = orders.filter(o => o.status === 'completed' || o.status === 'done');
+    if (status === 'accepted') orders = orders.filter(o => o.status === 'accepted' || o.status === 'ongoing');
+    
     return { success: true, orders: orders };
   }
   
@@ -4488,6 +4532,13 @@ async function acceptOrder(orderId, btn) {
   try {
     const data = await apiPost('/api/driver/orders/' + orderId + '/accept', {}, true);
     if (data.success) {
+      var orders = getStoredOrders();
+      var idx = orders.findIndex(function(o) { return o.id === orderId; });
+      if (idx !== -1) {
+        orders[idx].status = 'ongoing';
+        saveStoredOrders(orders);
+      }
+      
       const card = btn.closest('.order-card');
       card.style.borderLeft = '4px solid var(--secondary)';
       const status = card.querySelector('.order-status');
@@ -4498,7 +4549,7 @@ async function acceptOrder(orderId, btn) {
       const activeContainer = document.getElementById('activeOrders');
       const actions = card.querySelector('.order-actions');
       actions.innerHTML = `
-        <button class="driver-btn driver-btn-success" onclick="completeOrder(${orderId}, this)">完成行程</button>
+        <button class="driver-btn driver-btn-success" onclick="completeOrder('${orderId}', this)">完成行程</button>
         <button class="driver-btn driver-btn-secondary" onclick="contactPassenger()">联系乘客</button>
       `;
       activeContainer.appendChild(card);
@@ -4534,6 +4585,13 @@ async function completeOrder(orderId, btn) {
   try {
     const data = await apiPost('/api/driver/orders/' + orderId + '/complete', {}, true);
     if (data.success) {
+      var orders = getStoredOrders();
+      var idx = orders.findIndex(function(o) { return o.id === orderId; });
+      if (idx !== -1) {
+        orders[idx].status = 'done';
+        saveStoredOrders(orders);
+      }
+      
       const card = btn.closest('.order-card');
       const status = card.querySelector('.order-status');
       status.className = 'order-status completed';
@@ -4662,34 +4720,44 @@ function renderOrders(orders, containerId, showActions) {
     return;
   }
   
-  container.innerHTML = orders.map(order => `
-    <div class="order-card" style="${order.status === 'accepted' ? 'border-left:4px solid var(--secondary)' : ''}">
+  container.innerHTML = orders.map(order => {
+    const from = order.from_address || order.from || '未知出发地';
+    const to = order.to_address || order.to || '未知目的地';
+    const time = order.departure_time || order.time || '待定';
+    const name = order.passenger_name || order.passenger || '乘客';
+    const phone = order.passenger_phone || order.phone || '';
+    const pax = order.passengers || order.pax || 1;
+    const price = order.price || 0;
+    const status = order.status || 'pending';
+    
+    return `
+    <div class="order-card" style="${status === 'accepted' ? 'border-left:4px solid var(--secondary)' : ''}">
       <div class="order-info">
         <div class="order-header">
-          <div class="order-route">${order.from_address} → ${order.to_address}</div>
-          <div class="order-status ${order.status}">${getStatusText(order.status)}</div>
+          <div class="order-route">${from} → ${to}</div>
+          <div class="order-status ${status}">${getStatusText(status)}</div>
         </div>
         <div class="order-details">
-          <div class="order-detail">📅 <strong>${order.departure_time || '待定'}</strong></div>
-          <div class="order-detail">👤 <strong>${order.passenger_name || '乘客'}</strong> · ${order.school || ''}</div>
-          <div class="order-detail">👥 <strong>${order.passengers || 1}人</strong> ${order.type === 'share' ? '拼车' : '独立约车'}</div>
-          <div class="order-detail">💰 <strong>¥${order.price || 0}</strong></div>
-          ${order.status === 'accepted' ? `<div class="order-detail">📞 <strong>${maskPhone(order.passenger_phone)}</strong></div>` : ''}
+          <div class="order-detail">📅 <strong>${time}</strong></div>
+          <div class="order-detail">👤 <strong>${name}</strong></div>
+          <div class="order-detail">👥 <strong>${pax}人</strong></div>
+          <div class="order-detail">💰 <strong>¥${price}</strong></div>
+          ${status === 'accepted' && phone ? `<div class="order-detail">📞 <strong>${maskPhone(phone)}</strong></div>` : ''}
         </div>
       </div>
       <div class="order-actions">
         ${showActions ? `
-          <button class="driver-btn driver-btn-primary" onclick="acceptOrder(${order.id}, this)">接单</button>
-          <button class="driver-btn driver-btn-secondary" onclick="declineOrder(${order.id}, this)">拒绝</button>
-        ` : order.status === 'accepted' ? `
-          <button class="driver-btn driver-btn-success" onclick="completeOrder(${order.id}, this)">完成行程</button>
+          <button class="driver-btn driver-btn-primary" onclick="acceptOrder('${order.id}', this)">接单</button>
+          <button class="driver-btn driver-btn-secondary" onclick="declineOrder('${order.id}', this)">拒绝</button>
+        ` : status === 'accepted' ? `
+          <button class="driver-btn driver-btn-success" onclick="completeOrder('${order.id}', this)">完成行程</button>
           <button class="driver-btn driver-btn-secondary" onclick="contactPassenger()">联系乘客</button>
         ` : `
           <button class="driver-btn driver-btn-secondary" onclick="contactPassenger()">联系乘客</button>
         `}
       </div>
     </div>
-  `).join('');
+  `}).join('');
 }
 
 function renderOrdersList(orders, containerId) {
@@ -4699,30 +4767,38 @@ function renderOrdersList(orders, containerId) {
     return;
   }
   
-  container.innerHTML = orders.map(order => `
+  container.innerHTML = orders.map(order => {
+    const from = order.from_address || order.from || '未知出发地';
+    const to = order.to_address || order.to || '未知目的地';
+    const time = order.departure_time || order.time || '待定';
+    const name = order.passenger_name || order.passenger || '乘客';
+    const price = order.price || 0;
+    const status = order.status || 'pending';
+    
+    return `
     <div class="order-card">
       <div class="order-info">
         <div class="order-header">
-          <div class="order-route">${order.from_address} → ${order.to_address}</div>
-          <div class="order-status ${order.status}">${getStatusText(order.status)}</div>
+          <div class="order-route">${from} → ${to}</div>
+          <div class="order-status ${status}">${getStatusText(status)}</div>
         </div>
         <div class="order-details">
-          <div class="order-detail">📅 <strong>${order.departure_time || '待定'}</strong></div>
-          <div class="order-detail">👤 <strong>${order.passenger_name || '乘客'}</strong></div>
-          <div class="order-detail">💰 <strong>¥${order.price || 0}</strong></div>
+          <div class="order-detail">📅 <strong>${time}</strong></div>
+          <div class="order-detail">👤 <strong>${name}</strong></div>
+          <div class="order-detail">💰 <strong>¥${price}</strong></div>
         </div>
       </div>
       <div class="order-actions">
-        ${order.status === 'pending' ? `
-          <button class="driver-btn driver-btn-primary" onclick="acceptOrder(${order.id}, this)">接单</button>
-          <button class="driver-btn driver-btn-secondary" onclick="declineOrder(${order.id}, this)">拒绝</button>
-        ` : order.status === 'accepted' ? `
-          <button class="driver-btn driver-btn-success" onclick="completeOrder(${order.id}, this)">完成行程</button>
+        ${status === 'pending' ? `
+          <button class="driver-btn driver-btn-primary" onclick="acceptOrder('${order.id}', this)">接单</button>
+          <button class="driver-btn driver-btn-secondary" onclick="declineOrder('${order.id}', this)">拒绝</button>
+        ` : status === 'accepted' ? `
+          <button class="driver-btn driver-btn-success" onclick="completeOrder('${order.id}', this)">完成行程</button>
           <button class="driver-btn driver-btn-secondary" onclick="contactPassenger()">联系乘客</button>
         ` : ''}
       </div>
     </div>
-  `).join('');
+  `}).join('');
 }
 
 function renderEarnings(earnings, containerId) {
@@ -5410,10 +5486,13 @@ function showSuccessModal(orderId, alipayOrderId) {
     departTime: date + ' ' + time + ' 出发',
     arriveTime: '预计到达',
     pax: state.pax,
-    price: '¥' + total + '.00' + (isPrivate ? '（整车价）' : ''),
+    price: total,
     driver: d.name + ' · ' + d.plate,
     driverName: d.name,
     plate: d.plate,
+    driverPhone: '13800003333',
+    passengerPhone: getSession()?.phone || '13800001111',
+    passengerName: getSession()?.name || '同学',
     mates: d.mates,
     hasReviewed: false,
     reviewStars: 0,
