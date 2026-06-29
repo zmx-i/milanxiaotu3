@@ -2780,29 +2780,29 @@ body.share-page { overflow: hidden; }
         <span class="demo-title">体验账号</span>
       </div>
       <div class="demo-accounts-list">
-        <div class="demo-account-item">
+        <div class="demo-account-item" onclick="fillDemoAccount('13800001111')">
           <div class="demo-role">👨‍🎓 学生</div>
           <div class="demo-info">
             <div class="demo-phone">13800001111</div>
-            <div class="demo-pwd">密码：123456</div>
+            <div class="demo-pwd">点击自动填手机号+获取验证码</div>
           </div>
         </div>
-        <div class="demo-account-item">
+        <div class="demo-account-item" onclick="fillDemoAccount('13800002222')">
           <div class="demo-role">👨‍🎓 学生</div>
           <div class="demo-info">
             <div class="demo-phone">13800002222</div>
-            <div class="demo-pwd">密码：123456</div>
+            <div class="demo-pwd">点击自动填手机号+获取验证码</div>
           </div>
         </div>
-        <div class="demo-account-item">
+        <div class="demo-account-item" onclick="fillDemoAccount('13800003333')">
           <div class="demo-role">🚗 司机</div>
           <div class="demo-info">
             <div class="demo-phone">13800003333</div>
-            <div class="demo-pwd">密码：123456</div>
+            <div class="demo-pwd">点击自动填手机号+获取验证码</div>
           </div>
         </div>
       </div>
-      <div class="demo-accounts-tip">📱 验证码点击获取后自动填入：123456</div>
+      <div class="demo-accounts-tip">📱 点击账号即可自动填入手机号并获取验证码</div>
     </div>
 
     
@@ -4096,6 +4096,14 @@ async function sendSms(phone, btnId) {
   
   showToast('📱 验证码已发送：' + demoCode, 6000);
   startSmsCountdown();
+}
+
+function fillDemoAccount(phone) {
+  document.getElementById('loginPhone').value = phone;
+  switchLoginMode('sms');
+  setTimeout(function() {
+    sendLoginSms();
+  }, 300);
 }
 
 // 登录验证码
