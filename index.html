@@ -2214,6 +2214,8 @@ ul { list-style: none; }
 @media (max-width: 767px) {
   .bottom-nav-item { font-size: 10px; }
   .bottom-nav-item .bnav-icon { font-size: 20px; }
+  .login-card { max-height: 85vh; overflow-y: auto; }
+  .demo-accounts { margin-bottom: 12px; }
   .page-track-wrap {
     height: calc(100vh - var(--nav-h) - var(--bottom-h) - 10px);
     min-height: 350px;
@@ -4498,6 +4500,9 @@ function confirmLogout() {
     document.getElementById('loginContainer').classList.remove('hidden');
     document.getElementById('driverPage').classList.remove('active');
     document.querySelector('.app-wrapper').style.display = 'flex';
+    // 移动端：恢复学生底部导航
+    var studentBottomNav = document.querySelector('.bottom-nav');
+    if (studentBottomNav && window.innerWidth <= 768) studentBottomNav.style.display = 'flex';
     switchPage('home', null);
     switchLoginTab('login');
     showToast('👋 ' + name + '，感谢使用民兰校途！');
@@ -4510,6 +4515,9 @@ let driverIsOnline = true;
 function showDriverPage() {
   document.querySelector('.app-wrapper').style.display = 'none';
   document.getElementById('driverPage').classList.add('active');
+  // 移动端：隐藏学生底部导航，避免与司机导航重叠乱码
+  var studentBottomNav = document.querySelector('.bottom-nav');
+  if (studentBottomNav) studentBottomNav.style.display = 'none';
   
   const user = getSession();
   if (user) {
