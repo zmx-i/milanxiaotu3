@@ -4959,28 +4959,29 @@ function quickBook() {
   if(!date) { showToast('⚠️ 请选择出行日期'); return; }
   if(!time) { showToast('⚠️ 请选择出行时间'); return; }
   
+  // 设置路线信息（拼车和独立约车都需要）
+  const routeMap = {
+    airport:   { name: '中川机场', price: 60 },
+    west:      { name: '兰州西站', price: 35 },
+    east:      { name: '兰州火车站', price: 28 },
+    city:      { name: '兰州市区', price: 25 },
+    yuzhong:   { name: '榆中高铁站', price: 15 },
+    custom:    { name: '自定义', price: 0 },
+    airport_r: { name: '中川机场（返程）', price: 60 },
+    west_r:    { name: '兰州西站（返程）', price: 35 },
+    east_r:    { name: '兰州火车站（返程）', price: 28 }
+  };
+  const r = routeMap[route] || { name: '自定义', price: 0 };
+  state.selectedRoute = route;
+  state.selectedRouteName = r.name;
+  state.selectedRoutePrice = r.price;
+  
+  // 同步日期时间到预约页
+  document.getElementById('bookDate').value = date;
+  document.getElementById('bookTime').value = time;
+  
   // 独立约车：直接派单，跳过拼车查询流程
   if (state.tripType === 'private') {
-    const routeMap = {
-      airport:   { name: '中川机场', price: 60 },
-      west:      { name: '兰州西站', price: 35 },
-      east:      { name: '兰州火车站', price: 28 },
-      city:      { name: '兰州市区', price: 25 },
-      yuzhong:   { name: '榆中高铁站', price: 15 },
-      custom:    { name: '自定义', price: 0 },
-      airport_r: { name: '中川机场（返程）', price: 60 },
-      west_r:    { name: '兰州西站（返程）', price: 35 },
-      east_r:    { name: '兰州火车站（返程）', price: 28 }
-    };
-    const r = routeMap[route] || { name: '自定义', price: 0 };
-    state.selectedRoute = route;
-    state.selectedRouteName = r.name;
-    state.selectedRoutePrice = r.price;
-    
-    // 同步日期时间到预约页
-    document.getElementById('bookDate').value = date;
-    document.getElementById('bookTime').value = time;
-    
     showToast('🚙 正在为您匹配附近专车…');
     setTimeout(() => {
       switchPage('book', null);
