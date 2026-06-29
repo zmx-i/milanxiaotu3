@@ -3269,7 +3269,7 @@ body.share-page { overflow: hidden; }
             <div class="price-preview">
               <div class="price-preview-title">费用明细</div>
               <div class="price-row">
-                <div class="price-row-label">基础票价</div>
+                <div class="price-row-label">单价（/人）</div>
                 <div class="price-row-value" id="basePrice">¥60.00</div>
               </div>
               <div class="price-row">
@@ -3322,7 +3322,7 @@ body.share-page { overflow: hidden; }
                 </div>
                 <div class="confirm-detail-row">
                   <span class="confirm-detail-label">💰 费用</span>
-                  <span class="confirm-detail-value" id="confirmPrice" style="color:var(--primary)">¥60.00 / 人</span>
+                  <span class="confirm-detail-value" id="confirmPrice" style="color:var(--primary)">¥60.00</span>
                 </div>
               </div>
             </div>
@@ -3847,13 +3847,36 @@ async function apiGet(url, needAuth = false) {
   
   if (url === '/api/student/orders') {
     const status = url.split('status=')[1];
-    let orders = mockStudentOrders[userPhone] || mockStudentOrders['13800001111'];
-    if (status === 'ongoing') orders = orders.filter(o => o.status === 'ongoing' || o.status === 'matched');
-    else if (status === 'matched') orders = orders.filter(o => o.status === 'matched');
-    else if (status === 'waiting') orders = orders.filter(o => o.status === 'waiting');
-    else if (status === 'done') orders = orders.filter(o => o.status === 'done');
-    else if (status === 'cancelled') orders = orders.filter(o => o.status === 'cancelled');
-    return { success: true, orders: orders };
+    let mockOrders = mockStudentOrders[userPhone] || mockStudentOrders['13800001111'];
+    let storedOrders = getStoredOrders();
+    storedOrders = storedOrders.map(o => ({
+      id: o.id,
+      status: o.status || 'waiting',
+      from: o.from || '榆中校区',
+      to: o.to || state.selectedRouteName || '中川机场',
+      time: o.departTime || o.time || '2026-06-29 08:00',
+      arriveTime: o.arriveTime || '预计 09:00 到达',
+      type: o.type === 'private' ? '独立约车' : '拼车',
+      pax: o.pax || 1,
+      price: typeof o.price === 'string' ? parseInt(o.price.replace(/[¥,]/g, '')) : (o.price || 35),
+      driver: o.driver || '',
+      plate: o.plate || '',
+      distance: o.dist ? o.dist + 'km' : '',
+      detail: o.mates || '',
+      review: o.reviewStars || 0,
+      reviewText: o.reviewText || '',
+      nightFee: false,
+    }));
+    
+    let allOrders = [...mockOrders, ...storedOrders];
+    
+    if (status === 'ongoing') allOrders = allOrders.filter(o => o.status === 'ongoing' || o.status === 'matched');
+    else if (status === 'matched') allOrders = allOrders.filter(o => o.status === 'matched');
+    else if (status === 'waiting') allOrders = allOrders.filter(o => o.status === 'waiting');
+    else if (status === 'done') allOrders = allOrders.filter(o => o.status === 'done');
+    else if (status === 'cancelled') allOrders = allOrders.filter(o => o.status === 'cancelled');
+    
+    return { success: true, orders: allOrders };
   }
   
   if (url === '/api/driver/dashboard') {
@@ -5024,7 +5047,7 @@ function selectType(el, type) {
   
   // 价格标签差异化
   var priceLabel = document.querySelector('.price-row.total .price-row-label');
-  if (priceLabel) priceLabel.textContent = type === 'private' ? '💳 专车费用（整车）' : '💳 预计人均';
+  if (priceLabel) priceLabel.textContent = type === 'private' ? '💳 专车费用（整车）' : '💳 预计费用';
   
   // 按钮文字差异化
   var step2Btn = document.querySelector('#step-content-2 .btn-primary');
@@ -5199,9 +5222,17 @@ function calculateCustomPrice() {
 function updatePricePreview() {
   const base = state.selectedRoutePrice;
   let total = base;
-  if(state.tripType === 'private') total = Math.round(base * state.pax * 2.5);
+  if(state.tripType === 'private') {
+    total = Math.round(base * state.pax * 2.5);
+  } else {
+    total = base * state.pax;
+  }
   document.getElementById('basePrice').textContent = (base > 0 ? '¥' + base + '.00' : '待询价');
-  document.getElementById('totalPrice').textContent = (base > 0 ? '¥' + total + '.00' : '待询价');
+  const priceText = base > 0 ? '¥' + total + '.00' : '待询价';
+  const breakdown = state.tripType === 'carpool' && state.pax > 1 && base > 0 
+    ? '（¥' + base + '/人 × ' + state.pax + '人）' 
+    : '';
+  document.getElementById('totalPrice').textContent = priceText + breakdown;
 }
 
 // ========== Step Navigation ==========
@@ -5234,7 +5265,7 @@ function goStep(step) {
       if (paxLabel) paxLabel.textContent = state.tripType === 'private' ? '专车人数' : '出行人数';
       // 价格标签
       var priceLabel = document.querySelector('.price-row.total .price-row-label');
-      if (priceLabel) priceLabel.textContent = state.tripType === 'private' ? '💳 专车费用（整车）' : '💳 预计人均';
+      if (priceLabel) priceLabel.textContent = state.tripType === 'private' ? '💳 专车费用（整车）' : '💳 预计费用';
       // 按钮文字
       var step2Btn = document.querySelector('#step-content-2 .btn-primary');
       if (step2Btn) step2Btn.textContent = state.tripType === 'private' ? '下一步：确认专车订单 →' : '下一步：确认订单 →';
@@ -5281,8 +5312,11 @@ function populateConfirm() {
   document.getElementById('confirmType').textContent = state.tripType === 'carpool' ? '🤝 拼车' : '🚙 独立约车';
   document.getElementById('confirmPax').textContent = state.pax + ' 人';
   const base = state.selectedRoutePrice;
-  const total = state.tripType === 'private' ? Math.round(base * state.pax * 2.5) : base;
-  document.getElementById('confirmPrice').textContent = '¥' + total + '.00' + (state.tripType === 'private' ? '（整车价）' : ' / 人');
+  const total = state.tripType === 'private' ? Math.round(base * state.pax * 2.5) : base * state.pax;
+  const breakdown = state.tripType === 'carpool' && state.pax > 1 
+    ? '（¥' + base + '/人 × ' + state.pax + '人）' 
+    : (state.tripType === 'private' ? '（整车价）' : '');
+  document.getElementById('confirmPrice').textContent = '¥' + total + '.00' + breakdown;
 }
 
 // ========== Submit Order ==========
@@ -5296,7 +5330,7 @@ function submitOrder() {
     btn.disabled = false;
     // 显示支付弹窗
     const base = state.selectedRoutePrice;
-    const total = state.tripType === 'private' ? Math.round(base * state.pax * 2.5) : base;
+    const total = state.tripType === 'private' ? Math.round(base * state.pax * 2.5) : base * state.pax;
     const date = document.getElementById('bookDate').value || '2026-06-27';
     const time = document.getElementById('bookTime').value || '08:00';
     showPaymentModal({
@@ -5318,7 +5352,7 @@ function showSuccessModal(orderId, alipayOrderId) {
   const oid = orderId || 'ML' + Date.now().toString().slice(-8);
   const isPrivate = state.tripType === 'private';
   const base = state.selectedRoutePrice;
-  const total = isPrivate ? Math.round(base * state.pax * 2.5) : base;
+  const total = isPrivate ? Math.round(base * state.pax * 2.5) : base * state.pax;
   document.getElementById('modalContent').innerHTML = `
     <div class="success-animation">
       <div class="success-icon">🎉</div>
@@ -5329,7 +5363,7 @@ function showSuccessModal(orderId, alipayOrderId) {
       <div class="si-row"><span class="si-label">目的地</span><span class="si-value">${state.selectedRouteName}</span></div>
       <div class="si-row"><span class="si-label">出行时间</span><span class="si-value">${date} ${time}</span></div>
       <div class="si-row"><span class="si-label">出行方式</span><span class="si-value">${isPrivate ? '独立约车' : '拼车'}</span></div>
-      <div class="si-row"><span class="si-label">费用</span><span class="si-value" style="color:var(--primary)">¥${total}.00${isPrivate ? '（整车价）' : ' / 人'}</span></div>
+      <div class="si-row"><span class="si-label">费用</span><span class="si-value" style="color:var(--primary)">¥${total}.00${isPrivate ? '（整车价）' : (state.pax > 1 ? '（¥' + state.selectedRoutePrice + '/人 × ' + state.pax + '人）' : '')}</span></div>
       ${alipayOrderId ? `<div class="si-row"><span class="si-label">支付状态</span><span class="si-value payment-status-badge payment-paid">✅ 支付宝已支付</span></div>` : ''}
     </div>
     <div style="font-size:12px;color:var(--text-secondary);background:rgba(20,184,122,0.06);border-radius:8px;padding:12px;margin-bottom:16px;line-height:1.7">
@@ -5364,7 +5398,7 @@ function showSuccessModal(orderId, alipayOrderId) {
     departTime: date + ' ' + time + ' 出发',
     arriveTime: '预计到达',
     pax: state.pax,
-    price: '¥' + total + '.00' + (isPrivate ? '（整车价）' : ' / 人'),
+    price: '¥' + total + '.00' + (isPrivate ? '（整车价）' : ''),
     driver: d.name + ' · ' + d.plate,
     driverName: d.name,
     plate: d.plate,
@@ -7357,7 +7391,6 @@ function initTrackMap() {
   var container = document.getElementById('trackMap');
   if (!container) return;
 
-  // 等待 AMap SDK 加载完成
   if (typeof AMap === 'undefined') {
     var retryCount = 0;
     var retryTimer = setInterval(function() {
@@ -7365,9 +7398,9 @@ function initTrackMap() {
       if (typeof AMap !== 'undefined') {
         clearInterval(retryTimer);
         _doInitMap(container);
-      } else if (retryCount >= 20) {
+      } else if (retryCount >= 10) {
         clearInterval(retryTimer);
-        _showMapError('地图 SDK 加载超时，请检查网络后刷新页面');
+        _initLeafletMap(container);
       }
     }, 500);
     return;
@@ -7378,16 +7411,13 @@ function initTrackMap() {
 
 function _doInitMap(container) {
   try {
-    // 确保容器有尺寸
     var w = container.clientWidth || container.offsetWidth;
     var h = container.clientHeight || container.offsetHeight;
     if (w === 0 || h === 0) {
-      // 容器尺寸为 0，延迟重试
       setTimeout(function() { _doInitMap(container); }, 300);
       return;
     }
 
-    // 创建地图实例
     trackMap = new AMap.Map(container, {
       zoom: 10,
       center: [104.125, 35.93],
@@ -7396,31 +7426,37 @@ function _doInitMap(container) {
       viewMode: '2D',
     });
 
-    // 地图创建成功回调
-    trackMap.on('complete', function() {
-      document.getElementById('trackLoading').classList.add('hidden');
-      state.trackInitialized = true;
-      loadTrackRoute(state.trackCurrentRoute);
-    });
+    state.mapType = 'amap';
 
-    // 如果 5 秒内未触发 complete，也强制继续
-    setTimeout(function() {
-      if (!state.trackInitialized && trackMap) {
+    trackMap.on('complete', function() {
+      if (_checkAmapLoaded(container)) {
         document.getElementById('trackLoading').classList.add('hidden');
         state.trackInitialized = true;
         loadTrackRoute(state.trackCurrentRoute);
       }
+    });
+
+    setTimeout(function() {
+      if (!state.trackInitialized && trackMap) {
+        if (_checkAmapLoaded(container)) {
+          document.getElementById('trackLoading').classList.add('hidden');
+          state.trackInitialized = true;
+          loadTrackRoute(state.trackCurrentRoute);
+        } else {
+          _showMapError('正在加载备用地图…');
+          try { trackMap.destroy(); } catch(e) {}
+          trackMap = null;
+          setTimeout(function() { _initLeafletMap(container); }, 300);
+        }
+      }
     }, 5000);
 
-    // 添加控件
     try {
       trackMap.addControl(new AMap.Scale());
       trackMap.addControl(new AMap.ToolBar({ position: { top: '70px', right: '10px' } }));
     } catch (e) {
-      // 控件添加失败不阻塞主流程
     }
 
-    // 窗口大小变化时刷新地图
     window.addEventListener('resize', function() {
       if (trackMap && state.currentPage === 'track') {
         trackMap.resize();
@@ -7428,7 +7464,8 @@ function _doInitMap(container) {
     });
 
   } catch (e) {
-    _showMapError('地图初始化失败：' + (e.message || '未知错误'));
+    _showMapError('高德地图初始化失败，尝试加载备用地图…');
+    setTimeout(function() { _initLeafletMap(container); }, 500);
   }
 }
 
@@ -7444,6 +7481,56 @@ function _showMapError(msg) {
   }
 }
 
+function _initLeafletMap(container) {
+  try {
+    var w = container.clientWidth || container.offsetWidth;
+    var h = container.clientHeight || container.offsetHeight;
+    if (w === 0 || h === 0) {
+      setTimeout(function() { _initLeafletMap(container); }, 300);
+      return;
+    }
+
+    if (typeof L === 'undefined') {
+      var script = document.createElement('script');
+      script.src = 'https://unpkg.com/leaflet@1.9.4/dist/leaflet.js';
+      script.onload = function() {
+        _initLeafletMap(container);
+      };
+      document.head.appendChild(script);
+      return;
+    }
+
+    trackMap = L.map(container, {
+      center: [35.93, 104.125],
+      zoom: 10,
+      zoomControl: true,
+      attributionControl: false,
+    });
+
+    L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
+      maxZoom: 19,
+      attribution: '&copy; OpenStreetMap contributors',
+    }).addTo(trackMap);
+
+    L.control.zoom({ position: 'bottomright' }).addTo(trackMap);
+
+    document.getElementById('trackLoading').classList.add('hidden');
+    state.trackInitialized = true;
+    state.mapType = 'leaflet';
+
+    loadTrackRoute(state.trackCurrentRoute);
+
+    window.addEventListener('resize', function() {
+      if (trackMap && state.currentPage === 'track') {
+        trackMap.invalidateSize();
+      }
+    });
+
+  } catch (e) {
+    _showMapError('地图加载失败：' + (e.message || '未知错误'));
+  }
+}
+
 // 加载指定路线
 function loadTrackRoute(routeKey) {
   if (!trackMap) return;
@@ -7454,16 +7541,30 @@ function loadTrackRoute(routeKey) {
   state.trackCurrentRoute = routeKey;
 
   // 清除旧图层
-  if (trackPolyline) { trackPolyline.setMap(null); trackPolyline = null; }
-  if (trackCarMarker) { trackCarMarker.setMap(null); trackCarMarker = null; }
-  if (trackStartMarker) { trackStartMarker.setMap(null); trackStartMarker = null; }
-  if (trackEndMarker) { trackEndMarker.setMap(null); trackEndMarker = null; }
+  if (state.mapType === 'leaflet') {
+    if (trackPolyline) { trackMap.removeLayer(trackPolyline); trackPolyline = null; }
+    if (trackCarMarker) { trackMap.removeLayer(trackCarMarker); trackCarMarker = null; }
+    if (trackStartMarker) { trackMap.removeLayer(trackStartMarker); trackStartMarker = null; }
+    if (trackEndMarker) { trackMap.removeLayer(trackEndMarker); trackEndMarker = null; }
+  } else {
+    if (trackPolyline) { trackPolyline.setMap(null); trackPolyline = null; }
+    if (trackCarMarker) { trackCarMarker.setMap(null); trackCarMarker = null; }
+    if (trackStartMarker) { trackStartMarker.setMap(null); trackStartMarker = null; }
+    if (trackEndMarker) { trackEndMarker.setMap(null); trackEndMarker = null; }
+  }
   clearTimeout(state.trackAnimTimer);
   state.trackAnimTimer = null;
   trackPathIndex = 0;
   state.trackProgress = 0;
 
-  // 加载驾车路线规划插件
+  if (state.mapType === 'leaflet') {
+    _loadLeafletRoute(route);
+  } else {
+    _loadAmapRoute(route);
+  }
+}
+
+function _loadAmapRoute(route) {
   AMap.plugin('AMap.Driving', function() {
     trackDriving = new AMap.Driving({
       map: trackMap,
@@ -7473,7 +7574,6 @@ function loadTrackRoute(routeKey) {
 
     trackDriving.search(route.start, route.end, function(status, result) {
       if (status === 'complete') {
-        // 获取路线点
         var steps = result.routes[0].steps;
         var pathPoints = [];
         steps.forEach(function(step) {
@@ -7483,11 +7583,9 @@ function loadTrackRoute(routeKey) {
         });
         trackRoutePath = pathPoints;
 
-        // 路线总距离（米）和预计时间（秒）
         var distance = result.routes[0].distance;
         var duration = result.routes[0].time;
 
-        // 绘制路线
         trackPolyline = new AMap.Polyline({
           path: pathPoints,
           strokeColor: route.color,
@@ -7499,7 +7597,6 @@ function loadTrackRoute(routeKey) {
         });
         trackMap.add(trackPolyline);
 
-        // 添加起点标记
         trackStartMarker = new AMap.Marker({
           position: route.start,
           content: '<div style="background:#1a5fa8;color:#fff;padding:4px 12px;border-radius:14px;font-size:12px;font-weight:700;white-space:nowrap;">📍 榆中校区</div>',
@@ -7507,7 +7604,6 @@ function loadTrackRoute(routeKey) {
         });
         trackMap.add(trackStartMarker);
 
-        // 添加终点标记
         trackEndMarker = new AMap.Marker({
           position: route.end,
           content: '<div style="background:' + route.color + ';color:#fff;padding:4px 12px;border-radius:14px;font-size:12px;font-weight:700;white-space:nowrap;">🏁 ' + route.name + '</div>',
@@ -7515,7 +7611,6 @@ function loadTrackRoute(routeKey) {
         });
         trackMap.add(trackEndMarker);
 
-        // 添加车辆标记
         trackCarMarker = new AMap.Marker({
           position: pathPoints[0],
           content: '<div style="width:36px;height:36px;background:' + route.color + ';border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:18px;box-shadow:0 2px 10px rgba(0,0,0,0.3);border:2px solid #fff;">🚗</div>',
@@ -7524,80 +7619,136 @@ function loadTrackRoute(routeKey) {
         });
         trackMap.add(trackCarMarker);
 
-        // 更新摘要信息
         document.getElementById('tsDistance').textContent = (distance / 1000).toFixed(1) + ' km';
         document.getElementById('tsDuration').textContent = Math.round(duration / 60) + ' min';
         document.getElementById('tsSpeed').textContent = '0 km/h';
 
-        // 更新司机信息
         document.getElementById('trackDriverAvatar').textContent = route.avatar;
         document.getElementById('trackDriverName').textContent = route.driver + ' · ' + route.plate;
         document.getElementById('trackProgress').textContent = '行程 0%';
 
-        // 自适应视野
         trackMap.setFitView(null, false, [60, 60, 60, 260]);
-
-        // 开始模拟
         startSimulation();
       } else {
-        // 规划失败，使用直线路径并估算数据
-        var fallbackDist = route.dist || 50;
-        var fallbackDur = route.dur || 45;
-        var straightPath = [route.start, route.end];
-        var midLng = (route.start[0] + route.end[0]) / 2;
-        var midLat = (route.start[1] + route.end[1]) / 2 + 0.05;
-        straightPath.splice(1, 0, [midLng, midLat]);
-        trackRoutePath = straightPath;
-
-        trackPolyline = new AMap.Polyline({
-          path: straightPath,
-          strokeColor: route.color,
-          strokeWeight: 6,
-          strokeOpacity: 0.8,
-          lineJoin: 'round',
-          showDir: true,
-        });
-        trackMap.add(trackPolyline);
-
-        trackStartMarker = new AMap.Marker({
-          position: route.start,
-          content: '<div style="background:#1a5fa8;color:#fff;padding:4px 12px;border-radius:14px;font-size:12px;font-weight:700;">📍 榆中校区</div>',
-          offset: new AMap.Pixel(-40, -30),
-        });
-        trackMap.add(trackStartMarker);
-
-        trackEndMarker = new AMap.Marker({
-          position: route.end,
-          content: '<div style="background:' + route.color + ';color:#fff;padding:4px 12px;border-radius:14px;font-size:12px;font-weight:700;">🏁 ' + route.name + '</div>',
-          offset: new AMap.Pixel(-35, -30),
-        });
-        trackMap.add(trackEndMarker);
-
-        trackCarMarker = new AMap.Marker({
-          position: straightPath[0],
-          content: '<div style="width:36px;height:36px;background:' + route.color + ';border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:18px;box-shadow:0 2px 10px rgba(0,0,0,0.3);border:2px solid #fff;">🚗</div>',
-          offset: new AMap.Pixel(-18, -18),
-          zIndex: 100,
-        });
-        trackMap.add(trackCarMarker);
-
-        // 更新摘要信息（使用估算数据）
-        document.getElementById('tsDistance').textContent = fallbackDist.toFixed(0) + ' km';
-        document.getElementById('tsDuration').textContent = fallbackDur + ' min';
-        document.getElementById('tsSpeed').textContent = '0 km/h';
-
-        // 更新司机信息
-        document.getElementById('trackDriverAvatar').textContent = route.avatar;
-        document.getElementById('trackDriverName').textContent = route.driver + ' · ' + route.plate;
-        document.getElementById('trackProgress').textContent = '行程 0%';
-        document.getElementById('trackStatusBadge').textContent = '行驶中';
-        document.getElementById('trackStatusBadge').className = 'track-status-badge moving';
-
-        trackMap.setFitView(null, false, [60, 60, 60, 260]);
-        startSimulation();
+        _fallbackRoute(route);
       }
     });
   });
+}
+
+function _loadLeafletRoute(route) {
+  var fallbackDist = route.dist || 50;
+  var fallbackDur = route.dur || 45;
+  var straightPath = [[route.start[1], route.start[0]], [route.end[1], route.end[0]]];
+  var midLat = (route.start[1] + route.end[1]) / 2;
+  var midLng = (route.start[0] + route.end[0]) / 2 + 0.05;
+  straightPath.splice(1, 0, [midLat, midLng]);
+
+  trackRoutePath = [[route.start[0], route.start[1]], [midLng, midLat], [route.end[0], route.end[1]]];
+
+  trackPolyline = L.polyline(straightPath, {
+    color: route.color,
+    weight: 6,
+    opacity: 0.8,
+    lineCap: 'round',
+    lineJoin: 'round',
+  }).addTo(trackMap);
+
+  trackStartMarker = L.marker([route.start[1], route.start[0]], {
+    icon: L.divIcon({
+      html: '<div style="background:#1a5fa8;color:#fff;padding:4px 12px;border-radius:14px;font-size:12px;font-weight:700;white-space:nowrap;">📍 榆中校区</div>',
+      className: 'leaflet-div-icon',
+      iconSize: [100, 30],
+      iconAnchor: [50, 30],
+    }),
+  }).addTo(trackMap);
+
+  trackEndMarker = L.marker([route.end[1], route.end[0]], {
+    icon: L.divIcon({
+      html: '<div style="background:' + route.color + ';color:#fff;padding:4px 12px;border-radius:14px;font-size:12px;font-weight:700;white-space:nowrap;">🏁 ' + route.name + '</div>',
+      className: 'leaflet-div-icon',
+      iconSize: [100, 30],
+      iconAnchor: [50, 30],
+    }),
+  }).addTo(trackMap);
+
+  trackCarMarker = L.marker([route.start[1], route.start[0]], {
+    icon: L.divIcon({
+      html: '<div style="width:36px;height:36px;background:' + route.color + ';border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:18px;box-shadow:0 2px 10px rgba(0,0,0,0.3);border:2px solid #fff;">🚗</div>',
+      className: 'leaflet-div-icon',
+      iconSize: [36, 36],
+      iconAnchor: [18, 18],
+    }),
+    zIndexOffset: 100,
+  }).addTo(trackMap);
+
+  document.getElementById('tsDistance').textContent = fallbackDist.toFixed(0) + ' km';
+  document.getElementById('tsDuration').textContent = fallbackDur + ' min';
+  document.getElementById('tsSpeed').textContent = '0 km/h';
+
+  document.getElementById('trackDriverAvatar').textContent = route.avatar;
+  document.getElementById('trackDriverName').textContent = route.driver + ' · ' + route.plate;
+  document.getElementById('trackProgress').textContent = '行程 0%';
+  document.getElementById('trackStatusBadge').textContent = '行驶中';
+  document.getElementById('trackStatusBadge').className = 'track-status-badge moving';
+
+  trackMap.fitBounds(trackPolyline.getBounds(), { padding: [60, 60] });
+  startSimulation();
+}
+
+function _fallbackRoute(route) {
+  var fallbackDist = route.dist || 50;
+  var fallbackDur = route.dur || 45;
+  var straightPath = [route.start, route.end];
+  var midLng = (route.start[0] + route.end[0]) / 2;
+  var midLat = (route.start[1] + route.end[1]) / 2 + 0.05;
+  straightPath.splice(1, 0, [midLng, midLat]);
+  trackRoutePath = straightPath;
+
+  trackPolyline = new AMap.Polyline({
+    path: straightPath,
+    strokeColor: route.color,
+    strokeWeight: 6,
+    strokeOpacity: 0.8,
+    lineJoin: 'round',
+    showDir: true,
+  });
+  trackMap.add(trackPolyline);
+
+  trackStartMarker = new AMap.Marker({
+    position: route.start,
+    content: '<div style="background:#1a5fa8;color:#fff;padding:4px 12px;border-radius:14px;font-size:12px;font-weight:700;">📍 榆中校区</div>',
+    offset: new AMap.Pixel(-40, -30),
+  });
+  trackMap.add(trackStartMarker);
+
+  trackEndMarker = new AMap.Marker({
+    position: route.end,
+    content: '<div style="background:' + route.color + ';color:#fff;padding:4px 12px;border-radius:14px;font-size:12px;font-weight:700;">🏁 ' + route.name + '</div>',
+    offset: new AMap.Pixel(-35, -30),
+  });
+  trackMap.add(trackEndMarker);
+
+  trackCarMarker = new AMap.Marker({
+    position: straightPath[0],
+    content: '<div style="width:36px;height:36px;background:' + route.color + ';border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:18px;box-shadow:0 2px 10px rgba(0,0,0,0.3);border:2px solid #fff;">🚗</div>',
+    offset: new AMap.Pixel(-18, -18),
+    zIndex: 100,
+  });
+  trackMap.add(trackCarMarker);
+
+  document.getElementById('tsDistance').textContent = fallbackDist.toFixed(0) + ' km';
+  document.getElementById('tsDuration').textContent = fallbackDur + ' min';
+  document.getElementById('tsSpeed').textContent = '0 km/h';
+
+  document.getElementById('trackDriverAvatar').textContent = route.avatar;
+  document.getElementById('trackDriverName').textContent = route.driver + ' · ' + route.plate;
+  document.getElementById('trackProgress').textContent = '行程 0%';
+  document.getElementById('trackStatusBadge').textContent = '行驶中';
+  document.getElementById('trackStatusBadge').className = 'track-status-badge moving';
+
+  trackMap.setFitView(null, false, [60, 60, 60, 260]);
+  startSimulation();
 }
 
 // 开始模拟车辆移动
@@ -7614,9 +7765,9 @@ function animStep() {
   if (!state.trackSimRunning || !trackCarMarker || !trackRoutePath) return;
 
   var path = trackRoutePath;
-  var totalFrames = path.length * 10; // 慢速: 100ms × (path×10) → 约 3.3 分钟
+  var totalFrames = path.length * 10;
   var baseSpeed = path.length / totalFrames;
-  var speed = baseSpeed * (0.85 + Math.random() * 0.3); // 动态速度微调
+  var speed = baseSpeed * (0.85 + Math.random() * 0.3);
   trackPathIndex += speed;
   if (trackPathIndex >= path.length - 1) {
     trackPathIndex = path.length - 1;
@@ -7636,20 +7787,24 @@ function animStep() {
   var lng = path[idx][0] + (path[nextIdx][0] - path[idx][0]) * frac;
   var lat = path[idx][1] + (path[nextIdx][1] - path[idx][1]) * frac;
 
-  trackCarMarker.setPosition([lng, lat]);
+  if (state.mapType === 'leaflet') {
+    trackCarMarker.setLatLng([lat, lng]);
+    if (trackPathIndex < path.length - 1) {
+      trackMap.panTo([lat, lng], { duration: 100 });
+    }
+  } else {
+    trackCarMarker.setPosition([lng, lat]);
+    if (trackPathIndex < path.length - 1) {
+      trackMap.setCenter([lng, lat], false, 300);
+    }
+  }
 
-  // 计算进度和速度
   var progress = Math.round((trackPathIndex / (path.length - 1)) * 100);
   state.trackProgress = progress;
   var simSpeed = Math.round(40 + Math.random() * 40);
 
   document.getElementById('trackProgress').textContent = '行程 ' + progress + '%';
   document.getElementById('tsSpeed').textContent = simSpeed + ' km/h';
-
-  // 平滑移动地图跟随车辆
-  if (progress < 100) {
-    trackMap.setCenter([lng, lat], false, 300);
-  }
 
   state.trackAnimTimer = setTimeout(animStep, 100);
 }
@@ -7706,11 +7861,9 @@ function switchTrackRoute(routeKey) {
 
 // ========== Book Map (预约出行地图) ==========
 function initBookMap() {
-  // 如果标记为已初始化但地图对象不存在（可能页面刷新或 DOM 重建），重置标志重新初始化
   if (bookMapInitialized && !bookMap) {
     bookMapInitialized = false;
   }
-  // 如果地图已初始化且对象有效，直接刷新路线
   if (bookMapInitialized && bookMap) {
     drawBookRoute();
     return;
@@ -7719,13 +7872,11 @@ function initBookMap() {
   var container = document.getElementById('bookMap');
   if (!container) return;
 
-  // 确保容器有尺寸
   if (!container.clientWidth || !container.clientHeight) {
     setTimeout(function() { initBookMap(); }, 200);
     return;
   }
 
-  // 等待 AMap SDK
   if (typeof AMap === 'undefined') {
     var retries = 0;
     var timer = setInterval(function() {
@@ -7733,10 +7884,9 @@ function initBookMap() {
       if (typeof AMap !== 'undefined') {
         clearInterval(timer);
         _doInitBookMap(container);
-      } else if (retries >= 20) {
+      } else if (retries >= 10) {
         clearInterval(timer);
-        document.getElementById('bookMapLoading').innerHTML =
-          '<div style="text-align:center;color:#e74c3c;">地图加载失败，请检查网络</div>';
+        _initBookMapLeaflet(container);
       }
     }, 500);
     return;
@@ -7755,37 +7905,106 @@ function _doInitBookMap(container) {
       viewMode: '2D',
     });
 
+    state.bookMapType = 'amap';
+
     bookMap.on('complete', function() {
-      document.getElementById('bookMapLoading').classList.add('hidden');
-      bookMapInitialized = true;
-      drawBookRoute();
+      if (_checkAmapLoaded(container)) {
+        document.getElementById('bookMapLoading').classList.add('hidden');
+        bookMapInitialized = true;
+        drawBookRoute();
+      }
     });
 
     setTimeout(function() {
       if (!bookMapInitialized && bookMap) {
-        document.getElementById('bookMapLoading').classList.add('hidden');
-        bookMapInitialized = true;
-        drawBookRoute();
+        if (_checkAmapLoaded(container)) {
+          document.getElementById('bookMapLoading').classList.add('hidden');
+          bookMapInitialized = true;
+          drawBookRoute();
+        } else {
+          document.getElementById('bookMapLoading').innerHTML =
+            '<div style="text-align:center;color:#e74c3c;">正在加载备用地图…</div>';
+          try { bookMap.destroy(); } catch(e) {}
+          bookMap = null;
+          setTimeout(function() { _initBookMapLeaflet(container); }, 300);
+        }
       }
     }, 5000);
 
   } catch (e) {
     document.getElementById('bookMapLoading').innerHTML =
-      '<div style="text-align:center;color:#e74c3c;">地图初始化失败</div>';
+      '<div style="text-align:center;color:#e74c3c;">正在加载备用地图…</div>';
+    setTimeout(function() { _initBookMapLeaflet(container); }, 500);
+  }
+}
+
+function _checkAmapLoaded(container) {
+  if (!container) return false;
+  var canvas = container.querySelector('canvas');
+  var img = container.querySelector('img[src*="amap"]');
+  return (canvas && canvas.width > 0) || (img && img.src);
+}
+
+function _initBookMapLeaflet(container) {
+  try {
+    if (!container.clientWidth || !container.clientHeight) {
+      setTimeout(function() { _initBookMapLeaflet(container); }, 200);
+      return;
+    }
+
+    if (typeof L === 'undefined') {
+      var script = document.createElement('script');
+      script.src = 'https://unpkg.com/leaflet@1.9.4/dist/leaflet.js';
+      script.onload = function() {
+        _initBookMapLeaflet(container);
+      };
+      document.head.appendChild(script);
+      return;
+    }
+
+    bookMap = L.map(container, {
+      center: [START_POINT[1], START_POINT[0]],
+      zoom: 10,
+      zoomControl: true,
+      attributionControl: false,
+    });
+
+    L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
+      maxZoom: 19,
+      attribution: '&copy; OpenStreetMap contributors',
+    }).addTo(bookMap);
+
+    L.control.zoom({ position: 'bottomright' }).addTo(bookMap);
+
+    document.getElementById('bookMapLoading').classList.add('hidden');
+    bookMapInitialized = true;
+    state.bookMapType = 'leaflet';
+
+    drawBookRoute();
+
+  } catch (e) {
+    document.getElementById('bookMapLoading').innerHTML =
+      '<div style="text-align:center;color:#e74c3c;">地图加载失败：' + (e.message || '未知错误') + '</div>';
   }
 }
 
 function drawBookRoute() {
   if (!bookMap) return;
 
-  // 确保 loading 被隐藏（双重保险）
   var loading = document.getElementById('bookMapLoading');
   if (loading) loading.classList.add('hidden');
 
   var routeKey = state.selectedRoute;
   var route = bookRoutes[routeKey];
 
-  // 清除旧图层
+  if (state.bookMapType === 'leaflet') {
+    if (bookMapPolyline) { bookMap.removeLayer(bookMapPolyline); bookMapPolyline = null; }
+    if (bookMapStartMarker) { bookMap.removeLayer(bookMapStartMarker); bookMapStartMarker = null; }
+    if (bookMapEndMarker) { bookMap.removeLayer(bookMapEndMarker); bookMapEndMarker = null; }
+    _drawBookRouteLeaflet(routeKey, route);
+    return;
+  }
+
   if (bookMapPolyline) { bookMapPolyline.setMap(null); bookMapPolyline = null; }
   if (bookMapStartMarker) { bookMapStartMarker.setMap(null); bookMapStartMarker = null; }
   if (bookMapEndMarker) { bookMapEndMarker.setMap(null); bookMapEndMarker = null; }
@@ -7960,14 +8179,84 @@ function drawBookRoute() {
   });
 }
 
+function _drawBookRouteLeaflet(routeKey, route) {
+  var startPoint = START_POINT;
+  var endPoint, color, endName;
+
+  if (routeKey === 'custom') {
+    startPoint = state.customStartCoord || START_POINT;
+    endPoint = state.customEndCoord || [103.834, 36.062];
+    endName = (document.getElementById('customTo') || {}).value || '目的地';
+    color = '#1a5fa8';
+  } else {
+    endPoint = route ? route.end : [103.834, 36.062];
+    color = route ? route.color : '#1a5fa8';
+    endName = route ? route.name : '目的地';
+  }
+
+  bookMapStartMarker = L.marker([startPoint[1], startPoint[0]], {
+    icon: L.divIcon({
+      html: '<div style="background:#1a5fa8;color:#fff;padding:3px 10px;border-radius:12px;font-size:11px;font-weight:700;white-space:nowrap;">📍 榆中校区</div>',
+      className: 'leaflet-div-icon',
+      iconSize: [80, 26],
+      iconAnchor: [40, 26],
+    }),
+  }).addTo(bookMap);
+
+  bookMapEndMarker = L.marker([endPoint[1], endPoint[0]], {
+    icon: L.divIcon({
+      html: '<div style="background:' + color + ';color:#fff;padding:3px 10px;border-radius:12px;font-size:11px;font-weight:700;white-space:nowrap;">🏁 ' + endName + '</div>',
+      className: 'leaflet-div-icon',
+      iconSize: [80, 26],
+      iconAnchor: [40, 26],
+    }),
+  }).addTo(bookMap);
+
+  var midLng = (startPoint[0] + endPoint[0]) / 2;
+  var midLat = (startPoint[1] + endPoint[1]) / 2;
+  var dLng = (endPoint[0] - startPoint[0]) * 111 * Math.cos((startPoint[1] + endPoint[1]) / 2 * Math.PI / 180);
+  var dLat = (endPoint[1] - startPoint[1]) * 111;
+  var distKm = Math.sqrt(dLng * dLng + dLat * dLat);
+  var off = Math.min(distKm * 0.03, 0.08);
+  var pLng = -(endPoint[1] - startPoint[1]) * off;
+  var pLat = (endPoint[0] - startPoint[0]) * off;
+
+  var curvePath = [
+    [startPoint[1], startPoint[0]],
+    [startPoint[1] + (endPoint[1] - startPoint[1]) * 0.2 + pLat * 0.4, startPoint[0] + (endPoint[0] - startPoint[0]) * 0.2 + pLng * 0.4],
+    [startPoint[1] + (endPoint[1] - startPoint[1]) * 0.45 + pLat * 0.8, startPoint[0] + (endPoint[0] - startPoint[0]) * 0.45 + pLng * 0.8],
+    [midLat + pLat, midLng + pLng],
+    [startPoint[1] + (endPoint[1] - startPoint[1]) * 0.6 - pLat * 0.5, startPoint[0] + (endPoint[0] - startPoint[0]) * 0.6 - pLng * 0.5],
+    [startPoint[1] + (endPoint[1] - startPoint[1]) * 0.85 - pLat * 0.2, startPoint[0] + (endPoint[0] - startPoint[0]) * 0.85 - pLng * 0.2],
+    [endPoint[1], endPoint[0]],
+  ];
+
+  bookMapPolyline = L.polyline(curvePath, {
+    color: color,
+    weight: 5,
+    opacity: 0.75,
+    lineCap: 'round',
+    lineJoin: 'round',
+  }).addTo(bookMap);
+
+  bookMap.fitBounds(bookMapPolyline.getBounds(), { padding: [30, 30] });
+}
+
 // 页面切换时清理预约地图
 function resetBookMap() {
   if (bookMap) {
     try {
-      if (bookMapPolyline) { bookMapPolyline.setMap(null); bookMapPolyline = null; }
-      if (bookMapStartMarker) { bookMapStartMarker.setMap(null); bookMapStartMarker = null; }
-      if (bookMapEndMarker) { bookMapEndMarker.setMap(null); bookMapEndMarker = null; }
-      bookMap.destroy();
+      if (state.bookMapType === 'leaflet') {
+        if (bookMapPolyline) { bookMap.removeLayer(bookMapPolyline); bookMapPolyline = null; }
+        if (bookMapStartMarker) { bookMap.removeLayer(bookMapStartMarker); bookMapStartMarker = null; }
+        if (bookMapEndMarker) { bookMap.removeLayer(bookMapEndMarker); bookMapEndMarker = null; }
+        bookMap.remove();
+      } else {
+        if (bookMapPolyline) { bookMapPolyline.setMap(null); bookMapPolyline = null; }
+        if (bookMapStartMarker) { bookMapStartMarker.setMap(null); bookMapStartMarker = null; }
+        if (bookMapEndMarker) { bookMapEndMarker.setMap(null); bookMapEndMarker = null; }
+        bookMap.destroy();
+      }
     } catch(e) {}
     bookMap = null;
     bookMapInitialized = false;
@@ -9302,26 +9591,33 @@ async function doAlipayPay(orderInfo) {
   btn.disabled = true;
 
   try {
-    const resp = await fetch(PAYMENT_API + '/api/alipay/pay', {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({
-        subject: orderInfo.subject || '民兰校途出行订单',
-        totalAmount: parseFloat(orderInfo.totalAmount).toFixed(2),
-        body: '榆中校区 → ' + (orderInfo.routeName || ''),
-        routeName: orderInfo.routeName || '',
-        routeKey: orderInfo.routeKey || '',
-        tripType: orderInfo.tripType || '',
-        pax: orderInfo.pax || 1,
-      }),
-    });
-    const data = await resp.json();
+    if (PAYMENT_API) {
+      const resp = await fetch(PAYMENT_API + '/api/alipay/pay', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          subject: orderInfo.subject || '民兰校途出行订单',
+          totalAmount: parseFloat(orderInfo.totalAmount).toFixed(2),
+          body: '榆中校区 → ' + (orderInfo.routeName || ''),
+          routeName: orderInfo.routeName || '',
+          routeKey: orderInfo.routeKey || '',
+          tripType: orderInfo.tripType || '',
+          pax: orderInfo.pax || 1,
+        }),
+      });
+      const data = await resp.json();
 
-    if (data.success && data.payUrl) {
-      paymentState.orderId = data.orderId;
-      showAlipayRedirectPanel(data.payUrl, data.orderId, orderInfo);
+      if (data.success && data.payUrl) {
+        paymentState.orderId = data.orderId;
+        showAlipayRedirectPanel(data.payUrl, data.orderId, orderInfo);
+      } else {
+        throw new Error(data.error || '订单创建失败');
+      }
     } else {
-      throw new Error(data.error || '订单创建失败');
+      await mockDelay(800);
+      const mockOrderId = 'ML' + Date.now().toString().slice(-8);
+      paymentState.orderId = mockOrderId;
+      showAlipayRedirectPanel('#', mockOrderId, orderInfo);
     }
   } catch (err) {
     console.error('支付请求失败:', err);
@@ -9338,66 +9634,95 @@ async function doAlipayPay(orderInfo) {
 function showAlipayRedirectPanel(payUrl, orderId, orderInfo) {
   const total = parseFloat(orderInfo.totalAmount).toFixed(2);
   const container = document.getElementById('paymentDialogContent');
-  container.innerHTML = `
-    <div class="payment-result">
-      <div class="payment-result-icon">🔵</div>
-      <div class="payment-result-title">支付宝支付</div>
-      <div class="payment-result-desc">
-        订单号：<strong>${orderId}</strong><br>
-        金额：<strong>¥${total}</strong>
-      </div>
-    </div>
-
-    <!-- 警告：不要扫码 -->
-    <div style="background:rgba(234,88,12,0.08);border:1.5px solid rgba(234,88,12,0.3);border-radius:var(--radius-sm);padding:12px 14px;margin-bottom:12px;display:flex;gap:10px;align-items:flex-start;">
-      <span style="font-size:18px;flex-shrink:0;">⚠️</span>
-      <div>
-        <div style="font-size:13px;font-weight:800;color:#ea580c;margin-bottom:3px;">不要扫二维码！</div>
-        <div style="font-size:12px;color:#92400e;line-height:1.7;">沙箱二维码需要专属 APP 才能扫，用普通支付宝扫不了，且会快速失效。<br>请按下方步骤用<strong>账号密码登录</strong>完成支付。</div>
-      </div>
-    </div>
-
-    <div style="background:rgba(22,119,255,0.06);border:1.5px solid rgba(22,119,255,0.2);border-radius:var(--radius-sm);padding:14px;margin-bottom:16px;">
-      <div style="font-size:13px;font-weight:700;color:#1677ff;margin-bottom:8px;">✅ 正确的沙箱支付步骤</div>
-      <div style="font-size:12px;color:var(--text-secondary);line-height:2;">
-        <div style="display:flex;align-items:center;gap:6px;margin-bottom:4px;">
-          <span style="background:#1677ff;color:#fff;border-radius:50%;width:18px;height:18px;display:inline-flex;align-items:center;justify-content:center;font-size:10px;font-weight:700;flex-shrink:0;">1</span>
-          点击"打开支付宝沙箱支付"
-        </div>
-        <div style="display:flex;align-items:center;gap:6px;margin-bottom:4px;">
-          <span style="background:#1677ff;color:#fff;border-radius:50%;width:18px;height:18px;display:inline-flex;align-items:center;justify-content:center;font-size:10px;font-weight:700;flex-shrink:0;">2</span>
-          页面打开后，点击 <strong style="color:#1677ff;">「账号密码登录」</strong> 切换登录方式
-        </div>
-        <div style="display:flex;align-items:center;gap:6px;margin-bottom:4px;">
-          <span style="background:#1677ff;color:#fff;border-radius:50%;width:18px;height:18px;display:inline-flex;align-items:center;justify-content:center;font-size:10px;font-weight:700;flex-shrink:0;">3</span>
-          账号：<code style="background:rgba(22,119,255,0.1);padding:1px 6px;border-radius:4px;color:#1677ff;">yrgevx5628@sandbox.com</code>
-        </div>
-        <div style="display:flex;align-items:center;gap:6px;margin-bottom:4px;">
-          <span style="background:#1677ff;color:#fff;border-radius:50%;width:18px;height:18px;display:inline-flex;align-items:center;justify-content:center;font-size:10px;font-weight:700;flex-shrink:0;">4</span>
-          密码：<code style="background:rgba(22,119,255,0.1);padding:1px 6px;border-radius:4px;color:#1677ff;">111111</code>
-        </div>
-        <div style="display:flex;align-items:center;gap:6px;">
-          <span style="background:#1677ff;color:#fff;border-radius:50%;width:18px;height:18px;display:inline-flex;align-items:center;justify-content:center;font-size:10px;font-weight:700;flex-shrink:0;">5</span>
-          支付成功后回到此页面点"我已支付"
+  
+  if (!PAYMENT_API) {
+    container.innerHTML = `
+      <div class="payment-result">
+        <div class="payment-result-icon">🔵</div>
+        <div class="payment-result-title">支付宝支付（演示模式）</div>
+        <div class="payment-result-desc">
+          订单号：<strong>${orderId}</strong><br>
+          金额：<strong>¥${total}</strong>
         </div>
       </div>
-    </div>
 
-    <a href="${payUrl}" target="_blank" style="display:block">
-      <button class="pay-btn" style="margin-bottom:10px;">
-        🔵 打开支付宝沙箱支付
+      <div style="background:rgba(20,184,122,0.06);border:1.5px solid rgba(20,184,122,0.2);border-radius:var(--radius-sm);padding:14px;margin-bottom:16px;">
+        <div style="font-size:13px;font-weight:700;color:var(--secondary);margin-bottom:8px;">🎯 演示模式说明</div>
+        <div style="font-size:12px;color:var(--text-secondary);line-height:1.7;">
+          当前为纯前端演示模式，无需真实支付。点击下方按钮即可模拟支付成功。
+        </div>
+      </div>
+
+      <button class="pay-btn" style="background:linear-gradient(135deg,var(--secondary),var(--secondary-light));margin-bottom:10px;"
+        onclick="onPaymentSuccess('${orderId}', '演示支付')">
+        ✅ 模拟支付成功
       </button>
-    </a>
 
-    <button class="pay-btn" style="background:linear-gradient(135deg,var(--secondary),var(--secondary-light));margin-bottom:10px;"
-      onclick="checkAlipayStatus('${orderId}')">
-      ✅ 我已支付，查询结果
-    </button>
+      <div class="payment-cancel-row">
+        <button class="payment-cancel-btn" onclick="closePaymentDialog()">暂时关闭</button>
+      </div>
+    `;
+  } else {
+    container.innerHTML = `
+      <div class="payment-result">
+        <div class="payment-result-icon">🔵</div>
+        <div class="payment-result-title">支付宝支付</div>
+        <div class="payment-result-desc">
+          订单号：<strong>${orderId}</strong><br>
+          金额：<strong>¥${total}</strong>
+        </div>
+      </div>
 
-    <div class="payment-cancel-row">
-      <button class="payment-cancel-btn" onclick="closePaymentDialog()">暂时关闭</button>
-    </div>
-  `;
+      <div style="background:rgba(234,88,12,0.08);border:1.5px solid rgba(234,88,12,0.3);border-radius:var(--radius-sm);padding:12px 14px;margin-bottom:12px;display:flex;gap:10px;align-items:flex-start;">
+        <span style="font-size:18px;flex-shrink:0;">⚠️</span>
+        <div>
+          <div style="font-size:13px;font-weight:800;color:#ea580c;margin-bottom:3px;">不要扫二维码！</div>
+          <div style="font-size:12px;color:#92400e;line-height:1.7;">沙箱二维码需要专属 APP 才能扫，用普通支付宝扫不了，且会快速失效。<br>请按下方步骤用<strong>账号密码登录</strong>完成支付。</div>
+        </div>
+      </div>
+
+      <div style="background:rgba(22,119,255,0.06);border:1.5px solid rgba(22,119,255,0.2);border-radius:var(--radius-sm);padding:14px;margin-bottom:16px;">
+        <div style="font-size:13px;font-weight:700;color:#1677ff;margin-bottom:8px;">✅ 正确的沙箱支付步骤</div>
+        <div style="font-size:12px;color:var(--text-secondary);line-height:2;">
+          <div style="display:flex;align-items:center;gap:6px;margin-bottom:4px;">
+            <span style="background:#1677ff;color:#fff;border-radius:50%;width:18px;height:18px;display:inline-flex;align-items:center;justify-content:center;font-size:10px;font-weight:700;flex-shrink:0;">1</span>
+            点击"打开支付宝沙箱支付"
+          </div>
+          <div style="display:flex;align-items:center;gap:6px;margin-bottom:4px;">
+            <span style="background:#1677ff;color:#fff;border-radius:50%;width:18px;height:18px;display:inline-flex;align-items:center;justify-content:center;font-size:10px;font-weight:700;flex-shrink:0;">2</span>
+            页面打开后，点击 <strong style="color:#1677ff;">「账号密码登录」</strong> 切换登录方式
+          </div>
+          <div style="display:flex;align-items:center;gap:6px;margin-bottom:4px;">
+            <span style="background:#1677ff;color:#fff;border-radius:50%;width:18px;height:18px;display:inline-flex;align-items:center;justify-content:center;font-size:10px;font-weight:700;flex-shrink:0;">3</span>
+            账号：<code style="background:rgba(22,119,255,0.1);padding:1px 6px;border-radius:4px;color:#1677ff;">yrgevx5628@sandbox.com</code>
+          </div>
+          <div style="display:flex;align-items:center;gap:6px;margin-bottom:4px;">
+            <span style="background:#1677ff;color:#fff;border-radius:50%;width:18px;height:18px;display:inline-flex;align-items:center;justify-content:center;font-size:10px;font-weight:700;flex-shrink:0;">4</span>
+            密码：<code style="background:rgba(22,119,255,0.1);padding:1px 6px;border-radius:4px;color:#1677ff;">111111</code>
+          </div>
+          <div style="display:flex;align-items:center;gap:6px;">
+            <span style="background:#1677ff;color:#fff;border-radius:50%;width:18px;height:18px;display:inline-flex;align-items:center;justify-content:center;font-size:10px;font-weight:700;flex-shrink:0;">5</span>
+            支付成功后回到此页面点"我已支付"
+          </div>
+        </div>
+      </div>
+
+      <a href="${payUrl}" target="_blank" style="display:block">
+        <button class="pay-btn" style="margin-bottom:10px;">
+          🔵 打开支付宝沙箱支付
+        </button>
+      </a>
+
+      <button class="pay-btn" style="background:linear-gradient(135deg,var(--secondary),var(--secondary-light));margin-bottom:10px;"
+        onclick="checkAlipayStatus('${orderId}')">
+        ✅ 我已支付，查询结果
+      </button>
+
+      <div class="payment-cancel-row">
+        <button class="payment-cancel-btn" onclick="closePaymentDialog()">暂时关闭</button>
+      </div>
+    `;
+  }
 }
 
 /**
