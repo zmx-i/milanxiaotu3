@@ -4146,8 +4146,7 @@ function fillDemoAccount(phone) {
   document.getElementById('loginPhone').value = phone;
   var isPasswordMode = document.getElementById('loginPassword').parentElement.style.display !== 'none';
   if (isPasswordMode) {
-    document.getElementById('loginPassword').value = '123456';
-    showToast('已填充手机号和密码');
+    showToast('已填充手机号');
   } else {
     setTimeout(function() {
       sendLoginSms();
