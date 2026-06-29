@@ -4585,15 +4585,33 @@ async function declineOrder(orderId, btn) {
   }
 }
 
+async function incrementUserTrips(phone) {
+  if (!phone) return;
+  var users = loadUsers();
+  var session = getSession();
+  if (users[phone]) {
+    users[phone].trips = (users[phone].trips || 0) + 1;
+    saveUsers(users);
+    // 如果当前登录用户是出行人，同步更新 session 和 UI
+    if (session && session.phone === phone) {
+      session.trips = users[phone].trips;
+      setSession(session);
+      updateAllUserUI(session);
+    }
+  }
+}
+
 async function completeOrder(orderId, btn) {
   try {
     const data = await apiPost('/api/driver/orders/' + orderId + '/complete', {}, true);
     if (data.success) {
       var orders = getStoredOrders();
       var idx = orders.findIndex(function(o) { return o.id === orderId; });
-      if (idx !== -1) {
+      if (idx !== -1 && orders[idx].status !== 'done') {
         orders[idx].status = 'done';
         saveStoredOrders(orders);
+        // 完成后累加乘客出行次数
+        incrementUserTrips(orders[idx].passengerPhone);
       }
       
       const card = btn.closest('.order-card');
@@ -6029,9 +6047,14 @@ function confirmArrival(btn) {
   if (orderId) {
     var orders = getStoredOrders();
     var idx = orders.findIndex(function(o) { return o.id === orderId; });
-    if (idx !== -1) {
+    if (idx !== -1 && orders[idx].status !== 'done') {
       orders[idx].status = 'done';
       saveStoredOrders(orders);
+      // 完成后累加当前用户出行次数
+      var sess = getSession();
+      if (sess && sess.phone) {
+        incrementUserTrips(sess.phone);
+      }
     }
   }
 
