@@ -3407,210 +3407,8 @@ body.share-page { overflow: hidden; }
             <div class="order-tab" onclick="switchOrderTab(this, 'cancelled')">已取消</div>
           </div>
 
-          <!-- Ongoing Order -->
-          <div class="order-card" data-id="ML20260626001" data-status="ongoing" onclick="toggleOrderDetail(this)">
-            <div class="order-card-header">
-              <div class="order-id">订单 #ML20260626001</div>
-              <div class="order-status status-ongoing">🚗 行程中</div>
-            </div>
-            <div class="order-route-bar">
-              <div class="order-point">
-                <div style="display:flex;align-items:center;gap:6px;margin-bottom:4px">
-                  <div class="order-point-dot dot-from"></div>
-                  <div class="order-point-name">榆中校区</div>
-                </div>
-                <div class="order-point-type">2026-06-26 14:30 出发</div>
-              </div>
-              <div class="order-arrow">→</div>
-              <div class="order-point">
-                <div style="display:flex;align-items:center;gap:6px;margin-bottom:4px">
-                  <div class="order-point-dot dot-to"></div>
-                  <div class="order-point-name">兰州西站</div>
-                </div>
-                <div class="order-point-type">预计 15:20 到达</div>
-              </div>
-            </div>
-            <div class="order-meta">
-              <div class="order-meta-item">🤝 拼车</div>
-              <div class="order-meta-item">👥 4 人满员</div>
-              <div class="order-meta-item">💰 ¥35/人</div>
-              <div class="order-meta-item" style="color:var(--secondary)">📍 距离到达约 15km</div>
-            </div>
-            <div class="order-detail">
-              <div class="order-detail-row"><span class="od-label">司机</span><span class="od-value">王师傅 · 甘A·8K632</span></div>
-              <div class="order-detail-row"><span class="od-label">拼友</span><span class="od-value">3位兰大同学同行</span></div>
-              <div class="order-detail-row"><span class="od-label">实况</span><span class="od-value" style="color:var(--secondary)">正在前往兰州西站，预计15:20到达</span></div>
-            </div>
-            <div class="order-actions">
-              <div class="order-action-btn btn-share-trip" onclick="event.stopPropagation();shareTrip(this)">📤 分享行程</div>
-              <div class="order-action-btn btn-share-trip" onclick="event.stopPropagation();callDriver()">📞 联系司机</div>
-              <div class="order-action-btn" style="background:rgba(20,184,129,0.08);color:#14b87a" onclick="event.stopPropagation();confirmArrival(this)">✅ 确认到达</div>
-              <div class="order-action-btn" style="background:rgba(220,38,38,0.08);color:#dc2626" onclick="event.stopPropagation();callEmergency()">🆘 紧急求助</div>
-            </div>
-          </div>
+          <div id="studentOrdersList"></div>
 
-          <!-- Waiting Order -->
-          <div class="order-card" data-id="ML20260627008" data-status="waiting" onclick="toggleOrderDetail(this)">
-            <div class="order-card-header">
-              <div class="order-id">订单 #ML20260627008</div>
-              <div class="order-status status-waiting">⏳ 匹配中</div>
-            </div>
-            <div class="order-route-bar">
-              <div class="order-point">
-                <div style="display:flex;align-items:center;gap:6px;margin-bottom:4px">
-                  <div class="order-point-dot dot-from"></div>
-                  <div class="order-point-name">榆中校区</div>
-                </div>
-                <div class="order-point-type">2026-06-27 08:00 出发</div>
-              </div>
-              <div class="order-arrow">→</div>
-              <div class="order-point">
-                <div style="display:flex;align-items:center;gap:6px;margin-bottom:4px">
-                  <div class="order-point-dot dot-to"></div>
-                  <div class="order-point-name">中川机场</div>
-                </div>
-                <div class="order-point-type">预计 09:10 到达</div>
-              </div>
-            </div>
-            <div class="order-meta">
-              <div class="order-meta-item">🤝 拼车</div>
-              <div class="order-meta-item">👤 1/4 已报名</div>
-              <div class="order-meta-item">💰 ¥60/人</div>
-              <div class="order-meta-item" style="color:#d97706">🤖 智能匹配中…</div>
-            </div>
-            <div class="order-detail">
-              <div class="order-detail-row"><span class="od-label">行程</span><span class="od-value">榆中校区 → 中川机场 · 约80km</span></div>
-              <div class="order-detail-row"><span class="od-label">状态</span><span class="od-value" style="color:#d97706">系统正在附近匹配同路线同学拼车</span></div>
-              <div class="order-detail-row"><span class="od-label">提示</span><span class="od-value">匹配截止至出发前2小时，届时自动确认</span></div>
-            </div>
-            <div class="order-actions">
-              <div class="order-action-btn btn-share-trip" onclick="event.stopPropagation();openInviteCard(this)">📢 邀请同学拼</div>
-              <div class="order-action-btn btn-cancel" onclick="event.stopPropagation();cancelOrder(this)">✕ 取消订单</div>
-            </div>
-          </div>
-
-          <!-- Matched Order（配对成功，可取消） -->
-          <div class="order-card" data-id="ML20260625015" data-status="matched" onclick="toggleOrderDetail(this)">
-            <div class="order-card-header">
-              <div class="order-id">订单 #ML20260625015</div>
-              <div class="order-status status-matched">🤝 已配对</div>
-            </div>
-            <div class="order-route-bar">
-              <div class="order-point">
-                <div style="display:flex;align-items:center;gap:6px;margin-bottom:4px">
-                  <div class="order-point-dot dot-from"></div>
-                  <div class="order-point-name">榆中校区</div>
-                </div>
-                <div class="order-point-type">2026-06-27 08:00 出发</div>
-              </div>
-              <div class="order-arrow">→</div>
-              <div class="order-point">
-                <div style="display:flex;align-items:center;gap:6px;margin-bottom:4px">
-                  <div class="order-point-dot dot-to"></div>
-                  <div class="order-point-name">兰州火车站</div>
-                </div>
-                <div class="order-point-type">预计 09:00 到达</div>
-              </div>
-            </div>
-            <div class="order-meta">
-              <div class="order-meta-item">🤝 拼车</div>
-              <div class="order-meta-item">👥 3/4 已配对</div>
-              <div class="order-meta-item">💰 ¥40/人</div>
-              <div class="order-meta-item" style="color:var(--primary)">🎉 配对成功，待出发</div>
-            </div>
-            <div class="order-detail">
-              <div class="order-detail-row"><span class="od-label">司机</span><span class="od-value">张师傅 · 甘A·7M321</span></div>
-              <div class="order-detail-row"><span class="od-label">拼友</span><span class="od-value">2位兰大同学已加入（还差1人满员）</span></div>
-              <div class="order-detail-row"><span class="od-label">车程</span><span class="od-value">约45km · 预计60分钟</span></div>
-              <div class="order-detail-row"><span class="od-label">截止</span><span class="od-value" style="color:#d97706">出发前2小时截止匹配，超时自动确认</span></div>
-            </div>
-            <div class="order-actions">
-              <div class="order-action-btn btn-share-trip" onclick="event.stopPropagation();openInviteCard(this)">📢 邀请同学拼</div>
-              <div class="order-action-btn btn-share-trip" onclick="event.stopPropagation();callDriver()">📞 联系司机</div>
-              <div class="order-action-btn btn-cancel" onclick="event.stopPropagation();cancelOrder(this)">✕ 取消订单</div>
-            </div>
-          </div>
-
-          <!-- Completed Orders -->
-          <div class="order-card" data-id="ML20260620003" data-status="done" onclick="toggleOrderDetail(this)">
-            <div class="order-card-header">
-              <div class="order-id">订单 #ML20260620003</div>
-              <div class="order-status status-done">✅ 已完成</div>
-            </div>
-            <div class="order-route-bar">
-              <div class="order-point">
-                <div style="display:flex;align-items:center;gap:6px;margin-bottom:4px">
-                  <div class="order-point-dot dot-from"></div>
-                  <div class="order-point-name">兰州西站</div>
-                </div>
-                <div class="order-point-type">2026-06-20 10:15 出发</div>
-              </div>
-              <div class="order-arrow">→</div>
-              <div class="order-point">
-                <div style="display:flex;align-items:center;gap:6px;margin-bottom:4px">
-                  <div class="order-point-dot dot-to"></div>
-                  <div class="order-point-name">榆中校区</div>
-                </div>
-                <div class="order-point-type">实际 11:08 到达</div>
-              </div>
-            </div>
-            <div class="order-meta">
-              <div class="order-meta-item">🤝 拼车</div>
-              <div class="order-meta-item">👥 4 人满员</div>
-              <div class="order-meta-item">💰 ¥35 已付</div>
-              <div class="order-meta-item"><span class="stars">★★★★★</span> 已评价</div>
-            </div>
-            <div class="order-detail">
-              <div class="order-detail-row"><span class="od-label">司机</span><span class="od-value">王师傅 · 甘A·8K632</span></div>
-              <div class="order-detail-row"><span class="od-label">车程</span><span class="od-value">约50km · 实际用时53分钟</span></div>
-              <div class="order-detail-row"><span class="od-label">评价</span><span class="od-value" style="color:#f59e0b">★★★★★ 准时、友好、安全</span></div>
-            </div>
-            <div class="order-actions">
-              <div class="order-action-btn btn-review" onclick="event.stopPropagation();showReview('ML20260620003','王师傅','甘A·8K632','拼车','兰州西站→榆中校区',5,'准时出发,驾驶稳,态度好','准时友好，全程安全，推荐！')">💬 查看评价</div>
-              <div class="order-action-btn btn-rebook" onclick="event.stopPropagation();rebook()">🔄 再次预约</div>
-            </div>
-          </div>
-
-          <div class="order-card" data-id="ML20260615012" data-status="done" onclick="toggleOrderDetail(this)">
-            <div class="order-card-header">
-              <div class="order-id">订单 #ML20260615012</div>
-              <div class="order-status status-done">✅ 已完成</div>
-            </div>
-            <div class="order-route-bar">
-              <div class="order-point">
-                <div style="display:flex;align-items:center;gap:6px;margin-bottom:4px">
-                  <div class="order-point-dot dot-from"></div>
-                  <div class="order-point-name">榆中校区</div>
-                </div>
-                <div class="order-point-type">2026-06-15 23:10 出发</div>
-              </div>
-              <div class="order-arrow">→</div>
-              <div class="order-point">
-                <div style="display:flex;align-items:center;gap:6px;margin-bottom:4px">
-                  <div class="order-point-dot dot-to"></div>
-                  <div class="order-point-name">兰州火车站</div>
-                </div>
-                <div class="order-point-type">实际 00:05 到达</div>
-              </div>
-            </div>
-            <div class="order-meta">
-              <div class="order-meta-item">🚙 独立约车</div>
-              <div class="order-meta-item">👤 1 人</div>
-              <div class="order-meta-item">💰 ¥100 已付</div>
-              <div class="order-meta-item" style="color:#7c3aed">🌙 深夜专线</div>
-            </div>
-            <div class="order-detail">
-              <div class="order-detail-row"><span class="od-label">司机</span><span class="od-value">李师傅 · 甘A·3F215</span></div>
-              <div class="order-detail-row"><span class="od-label">车程</span><span class="od-value">约45km · 实际用时55分钟</span></div>
-              <div class="order-detail-row"><span class="od-label">夜间附加</span><span class="od-value" style="color:#7c3aed">¥25 深夜服务费（合规公示）</span></div>
-            </div>
-            <div class="order-actions">
-              <div class="order-action-btn btn-review" onclick="event.stopPropagation();showReview('ML20260615012','李师傅','甘A·3F215','独立约车','榆中校区→兰州火车站',0,'','')">💬 去评价</div>
-              <div class="order-action-btn btn-rebook" onclick="event.stopPropagation();rebook()">🔄 再次预约</div>
-            </div>
-          </div>
-
-          <!-- Dynamic Orders (用户下单后自动插入) -->
           <div id="dynamicOrders"></div>
 
           <div class="empty-state" id="orderEmpty" style="display:none">
@@ -3931,6 +3729,20 @@ const mockDriverOrders = [
   { id: 1004, from: '兰州大学', to: '火车站', time: '2026-06-28 14:30', passengers: 1, price: 35, status: 'completed', passenger: '赵同学', phone: '136****3456' },
 ];
 
+// 模拟学生订单数据（按手机号区分）
+const mockStudentOrders = {
+  '13800001111': [
+    { id: 'ML20260626001', status: 'ongoing', from: '榆中校区', to: '兰州西站', time: '2026-06-26 14:30', arriveTime: '预计 15:20 到达', type: '拼车', pax: 4, price: 35, driver: '王师傅', plate: '甘A·8K632', distance: '约 15km', detail: '3位兰大同学同行', action: 'ongoing' },
+    { id: 'ML20260627008', status: 'waiting', from: '榆中校区', to: '中川机场', time: '2026-06-27 08:00', arriveTime: '预计 09:10 到达', type: '拼车', pax: 1, price: 60, action: 'waiting' },
+    { id: 'ML20260620003', status: 'done', from: '兰州西站', to: '榆中校区', time: '2026-06-20 10:15', arriveTime: '实际 11:08 到达', type: '拼车', pax: 4, price: 35, driver: '王师傅', plate: '甘A·8K632', review: 5, reviewText: '准时、友好、安全', action: 'done' },
+  ],
+  '13800002222': [
+    { id: 'ML20260627005', status: 'matched', from: '榆中校区', to: '兰州火车站', time: '2026-06-27 08:00', arriveTime: '预计 09:00 到达', type: '拼车', pax: 3, price: 40, driver: '张师傅', plate: '甘A·7M321', detail: '2位兰大同学已加入', action: 'matched' },
+    { id: 'ML20260628010', status: 'waiting', from: '兰州大学', to: '中川机场', time: '2026-06-28 14:00', arriveTime: '预计 15:10 到达', type: '拼车', pax: 1, price: 65, action: 'waiting' },
+    { id: 'ML20260615012', status: 'done', from: '榆中校区', to: '兰州火车站', time: '2026-06-15 23:10', arriveTime: '实际 00:05 到达', type: '独立约车', pax: 1, price: 100, driver: '李师傅', plate: '甘A·3F215', nightFee: true, action: 'done' },
+  ],
+};
+
 // 模拟司机收入数据
 const mockDriverEarnings = {
   today: { orders: 2, earnings: 140 },
@@ -4022,12 +3834,26 @@ async function apiPost(url, data = {}, needAuth = false) {
 async function apiGet(url, needAuth = false) {
   await mockDelay();
   
+  const session = getSession();
+  const userPhone = session ? session.phone : '';
+  
   if (url === '/api/user/profile') {
     return { success: true, profile: { name: '演示用户', phone: '138****1111' } };
   }
   
   if (url === '/api/contacts') {
     return { success: true, contacts: mockContacts };
+  }
+  
+  if (url === '/api/student/orders') {
+    const status = url.split('status=')[1];
+    let orders = mockStudentOrders[userPhone] || mockStudentOrders['13800001111'];
+    if (status === 'ongoing') orders = orders.filter(o => o.status === 'ongoing' || o.status === 'matched');
+    else if (status === 'matched') orders = orders.filter(o => o.status === 'matched');
+    else if (status === 'waiting') orders = orders.filter(o => o.status === 'waiting');
+    else if (status === 'done') orders = orders.filter(o => o.status === 'done');
+    else if (status === 'cancelled') orders = orders.filter(o => o.status === 'cancelled');
+    return { success: true, orders: orders };
   }
   
   if (url === '/api/driver/dashboard') {
@@ -5039,9 +4865,23 @@ function switchPage(pageName, el) {
     if (!state.trackInitialized) {
       setTimeout(function() { initTrackMap(); }, 300);
     } else if (trackMap) {
-      // 重新显示时刷新地图尺寸
       setTimeout(function() { trackMap.resize(); }, 100);
     }
+  }
+  
+  // 进入订单页面时加载订单
+  if (pageName === 'orders') {
+    setTimeout(function() {
+      const activeTab = document.querySelector('.order-tab.active');
+      if (activeTab) {
+        const status = activeTab.textContent === '全部' ? 'all' : 
+                      activeTab.textContent === '进行中' ? 'ongoing' :
+                      activeTab.textContent === '已配对' ? 'matched' :
+                      activeTab.textContent === '已完成' ? 'done' :
+                      activeTab.textContent === '已取消' ? 'cancelled' : 'all';
+        switchOrderTab(activeTab, status);
+      }
+    }, 100);
   }
 
   // 离开预约出行页时清理地图
@@ -5570,9 +5410,19 @@ function joinDemand(el) {
 }
 
 // ========== Orders Actions ==========
-function switchOrderTab(el, status) {
+async function switchOrderTab(el, status) {
   document.querySelectorAll('.order-tab').forEach(t => t.classList.remove('active'));
   el.classList.add('active');
+  
+  try {
+    const data = await apiGet('/api/student/orders' + (status !== 'all' ? '?status=' + status : ''), true);
+    if (data.success) {
+      renderStudentOrders(data.orders || [], 'studentOrdersList');
+    }
+  } catch (err) {
+    console.error('加载订单失败:', err);
+  }
+  
   var cards = document.querySelectorAll('.order-card');
   var hasVisible = false;
   cards.forEach(c => {
@@ -5580,16 +5430,126 @@ function switchOrderTab(el, status) {
       c.style.display = 'block';
       hasVisible = true;
     } else if (status === 'ongoing' && (c.dataset.status === 'ongoing' || c.dataset.status === 'matched')) {
-      // "进行中" 包含 行程中 和 已配对
       c.style.display = 'block';
       hasVisible = true;
     } else {
       c.style.display = 'none';
     }
   });
-  // 显示/隐藏空状态（只统计静态订单 + 动态订单总数）
   var empty = document.getElementById('orderEmpty');
   if (empty) empty.style.display = hasVisible ? 'none' : 'block';
+}
+
+function renderStudentOrders(orders, containerId) {
+  const container = document.getElementById(containerId);
+  if (!orders || orders.length === 0) {
+    container.innerHTML = '';
+    return;
+  }
+  
+  container.innerHTML = orders.map(order => {
+    const typeIcon = order.type === '拼车' ? '🤝' : '🚙';
+    const statusConfig = {
+      'ongoing': { label: '🚗 行程中', class: 'status-ongoing' },
+      'waiting': { label: '⏳ 匹配中', class: 'status-waiting' },
+      'matched': { label: '🤝 已配对', class: 'status-matched' },
+      'done': { label: '✅ 已完成', class: 'status-done' },
+      'cancelled': { label: '✕ 已取消', class: 'status-cancelled' },
+    };
+    const status = statusConfig[order.status] || statusConfig['done'];
+    
+    let metaHtml = `
+      <div class="order-meta-item">${typeIcon} ${order.type}</div>
+      <div class="order-meta-item">${order.pax >= 4 ? '👥 ' + order.pax + ' 人满员' : '👤 ' + order.pax + '/4 已报名'}</div>
+      <div class="order-meta-item">💰 ¥${order.price}${order.status === 'done' ? ' 已付' : '/人'}</div>
+    `;
+    
+    if (order.status === 'ongoing' && order.distance) {
+      metaHtml += `<div class="order-meta-item" style="color:var(--secondary)">📍 ${order.distance}</div>`;
+    } else if (order.status === 'waiting') {
+      metaHtml += `<div class="order-meta-item" style="color:#d97706">🤖 智能匹配中…</div>`;
+    } else if (order.status === 'matched') {
+      metaHtml += `<div class="order-meta-item" style="color:var(--primary)">🎉 配对成功，待出发</div>`;
+    } else if (order.status === 'done') {
+      metaHtml += order.nightFee ? `<div class="order-meta-item" style="color:#7c3aed">🌙 深夜专线</div>` : `<div class="order-meta-item"><span class="stars">★★★★★</span> ${order.review > 0 ? '已评价' : ''}</div>`;
+    }
+    
+    let detailHtml = '';
+    if (order.driver) {
+      detailHtml += `<div class="order-detail-row"><span class="od-label">司机</span><span class="od-value">${order.driver} · ${order.plate}</span></div>`;
+    }
+    if (order.detail) {
+      detailHtml += `<div class="order-detail-row"><span class="od-label">${order.status === 'matched' ? '拼友' : '实况'}</span><span class="od-value">${order.detail}</span></div>`;
+    }
+    if (order.status === 'waiting') {
+      detailHtml += `<div class="order-detail-row"><span class="od-label">状态</span><span class="od-value" style="color:#d97706">系统正在附近匹配同路线同学拼车</span></div>`;
+      detailHtml += `<div class="order-detail-row"><span class="od-label">提示</span><span class="od-value">匹配截止至出发前2小时，届时自动确认</span></div>`;
+    }
+    if (order.status === 'done') {
+      detailHtml += `<div class="order-detail-row"><span class="od-label">车程</span><span class="od-value">约${order.type === '独立约车' ? '45' : '50'}km · 实际用时${order.type === '独立约车' ? '55' : '53'}分钟</span></div>`;
+      if (order.review > 0) {
+        detailHtml += `<div class="order-detail-row"><span class="od-label">评价</span><span class="od-value" style="color:#f59e0b">★★★★★ ${order.reviewText}</span></div>`;
+      }
+      if (order.nightFee) {
+        detailHtml += `<div class="order-detail-row"><span class="od-label">夜间附加</span><span class="od-value" style="color:#7c3aed">¥25 深夜服务费（合规公示）</span></div>`;
+      }
+    }
+    
+    let actionsHtml = '';
+    if (order.status === 'ongoing') {
+      actionsHtml = `
+        <div class="order-action-btn btn-share-trip" onclick="event.stopPropagation();shareTrip(this)">📤 分享行程</div>
+        <div class="order-action-btn btn-share-trip" onclick="event.stopPropagation();callDriver()">📞 联系司机</div>
+        <div class="order-action-btn" style="background:rgba(20,184,129,0.08);color:#14b87a" onclick="event.stopPropagation();confirmArrival(this)">✅ 确认到达</div>
+        <div class="order-action-btn" style="background:rgba(220,38,38,0.08);color:#dc2626" onclick="event.stopPropagation();callEmergency()">🆘 紧急求助</div>
+      `;
+    } else if (order.status === 'waiting') {
+      actionsHtml = `
+        <div class="order-action-btn btn-share-trip" onclick="event.stopPropagation();openInviteCard(this)">📢 邀请同学拼</div>
+        <div class="order-action-btn btn-cancel" onclick="event.stopPropagation();cancelOrder(this)">✕ 取消订单</div>
+      `;
+    } else if (order.status === 'matched') {
+      actionsHtml = `
+        <div class="order-action-btn btn-share-trip" onclick="event.stopPropagation();openInviteCard(this)">📢 邀请同学拼</div>
+        <div class="order-action-btn btn-share-trip" onclick="event.stopPropagation();callDriver()">📞 联系司机</div>
+        <div class="order-action-btn btn-cancel" onclick="event.stopPropagation();cancelOrder(this)">✕ 取消订单</div>
+      `;
+    } else if (order.status === 'done') {
+      actionsHtml = `
+        <div class="order-action-btn btn-review" onclick="event.stopPropagation();showReview('${order.id}','${order.driver || ''}','${order.plate || ''}','${order.type}','${order.from}→${order.to}',${order.review || 0},'','')">💬 ${order.review > 0 ? '查看评价' : '去评价'}</div>
+        <div class="order-action-btn btn-rebook" onclick="event.stopPropagation();rebook()">🔄 再次预约</div>
+      `;
+    }
+    
+    return `
+      <div class="order-card" data-id="${order.id}" data-status="${order.status}" onclick="toggleOrderDetail(this)">
+        <div class="order-card-header">
+          <div class="order-id">订单 #${order.id}</div>
+          <div class="order-status ${status.class}">${status.label}</div>
+        </div>
+        <div class="order-route-bar">
+          <div class="order-point">
+            <div style="display:flex;align-items:center;gap:6px;margin-bottom:4px">
+              <div class="order-point-dot dot-from"></div>
+              <div class="order-point-name">${order.from}</div>
+            </div>
+            <div class="order-point-type">${order.time} 出发</div>
+          </div>
+          <div class="order-arrow">→</div>
+          <div class="order-point">
+            <div style="display:flex;align-items:center;gap:6px;margin-bottom:4px">
+              <div class="order-point-dot dot-to"></div>
+              <div class="order-point-name">${order.to}</div>
+            </div>
+            <div class="order-point-type">${order.arriveTime}</div>
+          </div>
+        </div>
+        <div class="order-meta">${metaHtml}</div>
+        ${detailHtml ? `<div class="order-detail">${detailHtml}</div>` : ''}
+        <div class="order-actions">${actionsHtml}</div>
+      </div>
+    `;
+  }).join('');
 }
 
 // 点击订单卡片展开/收起详情
