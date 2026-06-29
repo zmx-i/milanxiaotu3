@@ -2805,7 +2805,7 @@ body.share-page { overflow: hidden; }
           </div>
         </div>
       </div>
-      <div class="demo-accounts-tip">📱 体验账号自动获取演示验证码 | 真实手机号发送短信验证码</div>
+      <div class="demo-accounts-tip">📱 点击账号即可自动填入手机号并获取验证码</div>
     </div>
 
     
@@ -4105,59 +4105,13 @@ function switchLoginMode(mode) {
   }
 }
 
-// ========== 短信验证码 ==========
+// ========== 短信验证码（演示模式） ==========
 let smsCountdown = 0;
 let smsCountdownTimer = null;
 let smsTargetBtnId = 'smsSendBtn';
 
-// 演示体验账号（不消耗短信额度）
-var DEMO_PHONES = ['13800001111', '13800002222', '13800003333'];
-
-// 互亿无线短信 API 地址（Vercel Serverless Function）
-var SMS_API_URLS = [
-  '/api/sms',
-  'https://milanxiaotu3.vercel.app/api/sms'
-];
-
 function generateSmsCode() {
   return Math.floor(100000 + Math.random() * 900000).toString();
-}
-
-function isDemoPhone(phone) {
-  return DEMO_PHONES.indexOf(phone) !== -1;
-}
-
-function demoFallback(phone, targetInputId) {
-  var demoCode = generateSmsCode();
-  localStorage.setItem('ml_demo_sms_code', demoCode);
-  localStorage.setItem('ml_demo_sms_phone', phone);
-  if (targetInputId) {
-    var input = document.getElementById(targetInputId);
-    if (input) { input.value = demoCode; }
-  }
-  return demoCode;
-}
-
-async function callSmsApi(phone) {
-  for (var i = 0; i < SMS_API_URLS.length; i++) {
-    try {
-      var resp = await fetch(SMS_API_URLS[i], {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ phone: phone, action: 'send' })
-      });
-      if (resp.ok) {
-        var data = await resp.json();
-        if (data.ok) {
-          return { success: true, code: data.code, url: SMS_API_URLS[i] };
-        }
-        return { success: false, msg: data.msg || '发送失败' };
-      }
-    } catch (e) {
-      continue;
-    }
-  }
-  return { success: false, offline: true, msg: '短信服务暂不可用' };
 }
 
 async function sendSms(phone, btnId) {
@@ -4172,35 +4126,20 @@ async function sendSms(phone, btnId) {
   btn.disabled = true;
   btn.textContent = '发送中…';
 
+  await mockDelay(800);
+
+  var demoCode = generateSmsCode();
+  localStorage.setItem('ml_demo_sms_code', demoCode);
+  localStorage.setItem('ml_demo_sms_phone', phone);
+
   var targetInputId = btnId === 'smsSendBtn' ? 'loginSmsCode' : (btnId === 'regSmsSendBtn' ? 'regSmsCode' : '');
-
-  // 体验账号 → 演示模式
-  if (isDemoPhone(phone)) {
-    await mockDelay(500);
-    var demoCode = demoFallback(phone, targetInputId);
-    showToast('📱 体验账号验证码：' + demoCode, 6000);
-    startSmsCountdown();
-    return;
+  if (targetInputId) {
+    var input = document.getElementById(targetInputId);
+    if (input) { input.value = demoCode; }
   }
 
-  // 真实手机号 → 调用互亿无线 API
-  var result = await callSmsApi(phone);
-
-  if (result.success) {
-    localStorage.setItem('ml_demo_sms_code', result.code);
-    localStorage.setItem('ml_demo_sms_phone', phone);
-    showToast('📱 验证码已发送至 ' + phone.slice(0,3) + '****' + phone.slice(-4), 4000);
-    startSmsCountdown();
-  } else if (result.offline) {
-    // API 不通 → 演示模式兜底
-    var fallbackCode = demoFallback(phone, targetInputId);
-    showToast('📱 短信API未连接，演示验证码：' + fallbackCode, 6000);
-    startSmsCountdown();
-  } else {
-    showToast('⚠️ ' + (result.msg || '验证码发送失败，请重试'), 4000);
-    btn.disabled = false;
-    btn.textContent = '获取验证码';
-  }
+  showToast('📱 验证码已发送：' + demoCode, 6000);
+  startSmsCountdown();
 }
 
 function fillDemoAccount(phone) {
