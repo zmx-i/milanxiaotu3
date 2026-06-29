@@ -7974,26 +7974,23 @@ function switchTrackRoute(routeKey) {
 
 // ========== Book Map (预约出行地图) ==========
 function initBookMap() {
+  console.log('initBookMap called, bookMapInitialized:', bookMapInitialized, 'bookMap:', !!bookMap);
+  
   if (bookMapInitialized && bookMap) {
     drawBookRoute();
     return;
   }
 
   var container = document.getElementById('bookMap');
-  if (!container) return;
-
-  if (!container.clientWidth || !container.clientHeight) {
-    setTimeout(function() { initBookMap(); }, 200);
+  if (!container) {
+    console.warn('bookMap container not found');
     return;
   }
 
-  if (typeof AMap !== 'undefined') {
-    try {
-      _doInitBookMap(container);
-      return;
-    } catch(e) {
-      console.warn('高德地图初始化失败，切换到Leaflet:', e);
-    }
+  if (!container.clientWidth || !container.clientHeight) {
+    console.log('bookMap container has no size, retrying...');
+    setTimeout(function() { initBookMap(); }, 200);
+    return;
   }
 
   _initBookMapLeaflet(container);
