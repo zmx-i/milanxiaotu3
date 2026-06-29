@@ -1,0 +1,7 @@
+{
+  "functions": {
+    "api/sms.js": {
+      "runtime": "@vercel/node"
+    }
+  }
+}

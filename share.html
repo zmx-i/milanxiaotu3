@@ -1,0 +1,629 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta http-equiv="Cache-Control" content="no-cache, no-store, must-revalidate">
+<meta http-equiv="Pragma" content="no-cache">
+<meta http-equiv="Expires" content="0">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+<title>行程追踪 · 民兰校途</title>
+<!-- 预解析脚本：在 beacon 注入前执行，不受阻塞影响 -->
+<script>
+(function(){
+  var p = window.__SHARE_DATA__ = {};
+  function parse(s) {
+    if (!s) return;
+    var pairs = s.split('&');
+    for (var i = 0; i < pairs.length; i++) {
+      var eq = pairs[i].indexOf('=');
+      if (eq < 0) continue;
+      var k = pairs[i].slice(0, eq);
+      var v = pairs[i].slice(eq + 1);
+      try { v = decodeURIComponent(v); } catch(e) {}
+      if (k) p[k] = v;
+    }
+  }
+  // search params 优先
+  if (location.search) parse(location.search.replace(/^\?/, ''));
+  // hash 备用
+  if ((!p.f || !p.t) && location.hash) {
+    var h = location.hash.replace(/^#/, '').replace(/^share\?/, '');
+    parse(h);
+  }
+  // 正则兜底
+  if (!p.f || !p.t) {
+    var u = location.href;
+    var mf = u.match(/[#?&]f=([^&?#]*)/), mt = u.match(/[#?&]t=([^&?#]*)/);
+    if (mf && mt) {
+      try { p.f = decodeURIComponent(mf[1]); } catch(e) { p.f = mf[1]; }
+      try { p.t = decodeURIComponent(mt[1]); } catch(e) { p.t = mt[1]; }
+    }
+  }
+  // 设置 CSS 类控制初始渲染
+  var cls = p.f && p.t ? 'share-loaded' : 'share-error';
+  document.documentElement.className = cls;
+})();
+</script>
+<style>
+*, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+:root {
+  --primary: #1a5fa8;
+  --primary-dark: #134b85;
+  --green: #14b87a;
+  --red: #dc2626;
+  --gold: #d97706;
+  --bg: #f0f4f8;
+  --card: #ffffff;
+  --text: #1e293b;
+  --text-secondary: #64748b;
+  --shadow: 0 4px 24px rgba(0,0,0,0.08);
+}
+
+body {
+  font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", "PingFang SC", "Microsoft YaHei", sans-serif;
+  background: #e8edf3;
+  min-height: 100vh;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  padding: 0;
+  color: var(--text);
+  -webkit-font-smoothing: antialiased;
+}
+
+/* ===== 初始状态：loading 可见，main/error 隐藏 ===== */
+#loading {
+  position: fixed; top: 0; left: 0; right: 0; bottom: 0;
+  display: flex; flex-direction: column; align-items: center; justify-content: center;
+  background: #e8edf3; z-index: 1000;
+}
+#main, #error-state { display: none !important; }
+
+/* 解析成功：loading 隐藏，main 显示 */
+html.share-loaded #loading { display: none !important; }
+html.share-loaded #main { display: block !important; }
+html.share-loaded #error-state { display: none !important; }
+
+/* 解析失败：loading 隐藏，error 显示 */
+html.share-error #loading { display: none !important; }
+html.share-error #main { display: none !important; }
+html.share-error #error-state { display: flex !important; }
+html.share-error #debug-info { display: block !important; }
+.spinner {
+  width: 48px; height: 48px;
+  border: 3px solid #cbd5e1;
+  border-top-color: var(--primary);
+  border-radius: 50%;
+  animation: spin 0.8s linear infinite;
+}
+@keyframes spin { to { transform: rotate(360deg); } }
+.loading-text {
+  margin-top: 16px; color: var(--text-secondary); font-size: 14px;
+}
+
+/* Header */
+.header {
+  width: 100%; max-width: 480px;
+  background: linear-gradient(135deg, #1a5fa8 0%, #2563eb 100%);
+  color: #fff; padding: 24px 20px 32px;
+  text-align: center;
+  border-radius: 0 0 24px 24px;
+}
+.header .badge {
+  display: inline-block;
+  background: rgba(255,255,255,0.2);
+  backdrop-filter: blur(8px);
+  padding: 4px 14px; border-radius: 100px;
+  font-size: 12px; letter-spacing: 1px;
+  margin-bottom: 12px;
+}
+.header h1 {
+  font-size: 22px; font-weight: 700;
+  margin-bottom: 4px;
+}
+.header .sub {
+  font-size: 13px; opacity: 0.8;
+}
+
+/* Content */
+.content {
+  width: 100%; max-width: 480px;
+  padding: 16px 16px 32px;
+}
+
+/* Card */
+.card {
+  background: var(--card);
+  border-radius: 16px;
+  box-shadow: var(--shadow);
+  overflow: hidden;
+  margin-bottom: 12px;
+}
+
+/* Route card */
+.route-card { padding: 0; }
+.route-header {
+  display: flex; align-items: center; padding: 16px 20px;
+  border-bottom: 1px solid #f1f5f9;
+}
+.route-point {
+  display: flex; align-items: center; gap: 10px;
+  flex: 1; min-width: 0;
+}
+.route-dot {
+  flex-shrink: 0; width: 10px; height: 10px; border-radius: 50%;
+}
+.route-dot.start { background: var(--green); }
+.route-dot.end { background: var(--red); }
+.route-label {
+  font-size: 15px; font-weight: 600;
+  white-space: nowrap; overflow: hidden; text-overflow: ellipsis;
+}
+.route-arrow {
+  flex-shrink: 0; margin: 0 8px; color: var(--text-secondary);
+  font-size: 18px;
+}
+
+/* Map area */
+.map-area {
+  position: relative; width: 100%; height: 260px;
+  overflow: hidden;
+  background: linear-gradient(180deg, #e9f2f9 0%, #d4e6f5 30%, #c8dce8 60%, #bcd4e0 100%);
+}
+.map-grid {
+  position: absolute; top: 0; left: 0; width: 100%; height: 100%;
+  opacity: 0.25;
+}
+.map-svg {
+  position: absolute; top: 0; left: 0; width: 100%; height: 100%;
+}
+.route-path {
+  fill: none; stroke: var(--primary);
+  stroke-width: 3.5; stroke-linecap: round; stroke-linejoin: round;
+  stroke-dasharray: 1000;
+  stroke-dashoffset: 1000;
+  animation: dash-in 1.5s ease-out forwards;
+}
+@keyframes dash-in { to { stroke-dashoffset: 0; } }
+.route-path-bg {
+  fill: none; stroke: rgba(26,95,168,0.15);
+  stroke-width: 10; stroke-linecap: round;
+}
+
+/* Markers on map */
+.map-marker {
+  position: absolute;
+  display: flex; flex-direction: column; align-items: center;
+  transform: translate(-50%, -100%);
+  z-index: 2;
+}
+.map-marker .dot {
+  width: 20px; height: 20px; border-radius: 50%;
+  border: 3px solid #fff;
+  box-shadow: 0 2px 8px rgba(0,0,0,0.2);
+  margin-bottom: 3px;
+}
+.map-marker .dot.green { background: var(--green); }
+.map-marker .dot.red { background: var(--red); }
+.map-marker .name {
+  font-size: 10px; color: #334155; font-weight: 600;
+  background: rgba(255,255,255,0.85);
+  padding: 1px 6px; border-radius: 4px;
+  white-space: nowrap;
+}
+
+/* Car on map */
+.map-car {
+  position: absolute; z-index: 3;
+  font-size: 28px;
+  transform: translate(-50%, -50%);
+  filter: drop-shadow(0 2px 4px rgba(0,0,0,0.3));
+  transition: left 0.15s linear, top 0.15s linear;
+}
+
+/* Distance label on map */
+.map-dist {
+  position: absolute; z-index: 2;
+  font-size: 11px; color: var(--primary);
+  font-weight: 700;
+  background: rgba(255,255,255,0.9);
+  padding: 2px 8px; border-radius: 10px;
+  box-shadow: 0 1px 4px rgba(0,0,0,0.1);
+  transform: translate(-50%, -50%);
+}
+
+/* Trip info */
+.trip-info { padding: 16px 20px; }
+.info-row {
+  display: flex; justify-content: space-between; align-items: center;
+  padding: 10px 0;
+  border-bottom: 1px solid #f8fafc;
+}
+.info-row:last-child { border-bottom: none; }
+.info-label { font-size: 13px; color: var(--text-secondary); }
+.info-value { font-size: 14px; font-weight: 600; }
+.info-value.status { 
+  padding: 2px 10px; border-radius: 100px;
+  font-size: 12px;
+}
+.info-value.status.active { background: #dcfce7; color: #16a34a; }
+.info-value.status.matched { background: #dbeafe; color: #2563eb; }
+.info-value.status.waiting { background: #fef9c3; color: #a16207; }
+
+/* Safety footer */
+.safety {
+  display: flex; align-items: center; gap: 8px;
+  padding: 12px 16px;
+  background: #f0fdf4;
+  border-radius: 12px;
+  font-size: 12px; color: #16a34a;
+  margin-top: 12px;
+}
+
+/* Platform brand */
+.platform {
+  text-align: center; padding: 20px 16px 32px;
+  color: var(--text-secondary); font-size: 13px;
+}
+.platform strong { color: var(--primary); }
+
+/* Error */
+#error-state {
+  display: none; flex-direction: column; align-items: center;
+  justify-content: center; padding: 60px 20px; text-align: center;
+}
+#error-state .err-title { font-size: 18px; font-weight: 700; margin-bottom: 8px; }
+#error-state .err-desc { font-size: 14px; color: var(--text-secondary); }
+#error-state .err-icon { font-size: 48px; margin-bottom: 16px; }
+</style>
+<script src="https://beacon.cdn.qq.com/sdk/4.5.9/beacon_web.min.js"></script>
+<script>
+(function(){
+  try{
+    var beacon=new BeaconAction({
+      appkey:'0WEB06U85YBSLJNL',
+      versionCode:'1.0.0',
+      channelID:'share',
+      delay:1000,
+      sessionDuration:30*60*1000,
+      isOversea:false,
+      needReportRqdEvent:false
+    });
+    beacon.onDirectUserAction('preview_page_view',{
+      'url':location.href,
+      'referrer':document.referrer,
+      'title':document.title,
+      'sandbox_id':'6daa955d2e514b429cfcf1806fd40c5f'
+    });
+  }catch(e){}
+})();
+</script></head>
+<body>
+
+<!-- Loading -->
+<div id="loading">
+  <div class="spinner"></div>
+  <div class="loading-text">正在获取行程信息…</div>
+</div>
+
+<!-- Error State -->
+<div id="error-state">
+  <div class="err-icon">🔗</div>
+  <div class="err-title">无法解析行程信息</div>
+  <div class="err-desc">请确认链接完整，或请对方重新发送分享链接</div>
+  <div id="debug-info" style="display:none;margin-top:16px;padding:12px;background:#f1f5f9;border-radius:8px;font-size:11px;color:#64748b;text-align:left;word-break:break-all;max-width:100%;overflow-x:auto;"></div>
+</div>
+
+<!-- Main Content -->
+<div id="main" style="display:none;width:100%;max-width:480px;">
+
+  <!-- Header -->
+  <div class="header">
+    <div class="badge">实时追踪</div>
+    <h1 id="h-title">行程分享</h1>
+    <div class="sub" id="h-time"></div>
+  </div>
+
+  <div class="content">
+
+    <!-- Route Card -->
+    <div class="card route-card">
+      <div class="route-header">
+        <div class="route-point">
+          <div class="route-dot start"></div>
+          <div class="route-label" id="label-from">出发地</div>
+        </div>
+        <div class="route-arrow">→</div>
+        <div class="route-point">
+          <div class="route-dot end"></div>
+          <div class="route-label" id="label-to">目的地</div>
+        </div>
+      </div>
+
+      <!-- Map -->
+      <div class="map-area" id="mapArea">
+        <svg class="map-grid" viewBox="0 0 200 200" preserveAspectRatio="none">
+          <defs>
+            <pattern id="grid" width="20" height="20" patternUnits="userSpaceOnUse">
+              <path d="M 20 0 L 0 0 L 0 20" fill="none" stroke="#94a3b8" stroke-width="0.5"/>
+            </pattern>
+          </defs>
+          <rect width="200" height="200" fill="url(#grid)"/>
+        </svg>
+        <svg class="map-svg" id="mapSvg" viewBox="0 0 400 260" preserveAspectRatio="none">
+          <defs>
+            <filter id="glow">
+              <feGaussianBlur stdDeviation="2" result="blur"/>
+              <feMerge><feMergeNode in="blur"/><feMergeNode in="SourceGraphic"/></feMerge>
+            </filter>
+          </defs>
+          <!-- Background route (wider, translucent) -->
+          <path id="routePathBg" class="route-path-bg" d=""/>
+          <!-- Foreground route -->
+          <path id="routePath" class="route-path" d=""/>
+          <!-- Start marker -->
+          <circle id="markerStart" cx="0" cy="0" r="5" fill="#14b87a" stroke="#fff" stroke-width="2" filter="url(#glow)"/>
+          <!-- End marker -->
+          <circle id="markerEnd" cx="0" cy="0" r="5" fill="#dc2626" stroke="#fff" stroke-width="2" filter="url(#glow)"/>
+        </svg>
+        <!-- HTML markers for labels -->
+        <div class="map-marker" id="markerFromDiv" style="left:0%;top:0%">
+          <div class="dot green"></div>
+          <div class="name" id="markerFromLabel">出发地</div>
+        </div>
+        <div class="map-marker" id="markerToDiv" style="left:0%;top:0%">
+          <div class="dot red"></div>
+          <div class="name" id="markerToLabel">目的地</div>
+        </div>
+        <div class="map-dist" id="mapDist" style="left:0%;top:0%">80km</div>
+        <div class="map-car" id="mapCar">🚗</div>
+      </div>
+
+      <!-- Trip Details -->
+      <div class="trip-info">
+        <div class="info-row">
+          <span class="info-label">司机</span>
+          <span class="info-value" id="i-driver">-</span>
+        </div>
+        <div class="info-row">
+          <span class="info-label">车牌</span>
+          <span class="info-value" id="i-plate">-</span>
+        </div>
+        <div class="info-row">
+          <span class="info-label">距离</span>
+          <span class="info-value" id="i-km">-</span>
+        </div>
+        <div class="info-row">
+          <span class="info-label">预计时间</span>
+          <span class="info-value" id="i-min">-</span>
+        </div>
+        <div class="info-row">
+          <span class="info-label">出发时间</span>
+          <span class="info-value" id="i-tm">-</span>
+        </div>
+        <div class="info-row">
+          <span class="info-label">状态</span>
+          <span class="info-value status" id="i-status">-</span>
+        </div>
+      </div>
+    </div>
+
+    <!-- Safety -->
+    <div class="safety">
+      🛡️ 该行程由「民兰校途」平台提供安全保障，实时追踪行程状态。
+    </div>
+
+    <!-- Platform -->
+    <div class="platform">
+      由 <strong>民兰校途</strong> 提供技术支持
+    </div>
+  </div>
+</div>
+
+<script>
+(function() {
+  // 数据已由 head 预解析脚本存入 window.__SHARE_DATA__，直接使用
+  var params = window.__SHARE_DATA__ || {};
+
+  // 兜底：如果 head 脚本被跳过（极少数情况），重新解析
+  if (!params.f || !params.t) {
+    function parseParamStr(str) {
+      if (!str) return;
+      var pairs = str.split('&');
+      for (var i = 0; i < pairs.length; i++) {
+        var idx = pairs[i].indexOf('=');
+        if (idx < 0) continue;
+        var k = pairs[i].slice(0, idx), v = pairs[i].slice(idx + 1);
+        try { v = decodeURIComponent(v); } catch(e) {}
+        if (k) params[k] = v;
+      }
+    }
+    if (location.search) parseParamStr(location.search.replace(/^\?/, ''));
+    if ((!params.f || !params.t) && location.hash) parseParamStr(location.hash.replace(/^#/, '').replace(/^share\?/, ''));
+  }
+
+  // Debug 信息
+  var debugHtml = '<b>版本:</b> v3 (pre-parse) <br>' +
+    '<b>URL:</b> ' + location.href.replace(/</g,'&lt;') + '<br>' +
+    '<b>search:</b> ' + (location.search || '(无)').replace(/</g,'&lt;') + '<br>' +
+    '<b>hash:</b> ' + (location.hash || '(无)').replace(/</g,'&lt;') + '<br>' +
+    '<b>parsed:</b> f=' + (params.f||'(missing)') + ' t=' + (params.t||'(missing)') + '<br>' +
+    '<b>keys:</b> ' + Object.keys(params).join(', ');
+  document.getElementById('debug-info').innerHTML = debugHtml;
+
+  // 二次验证：如果 head 预解析成功但数据被清除
+  if (!params.f || !params.t) {
+    document.documentElement.className = 'share-error';
+    document.getElementById('debug-info').style.display = 'block';
+    return;
+  }
+
+  // Parse coordinates if available
+  var fromCoord = null, toCoord = null;
+  if (params.fa) {
+    var fa = params.fa.split(',');
+    if (fa.length === 2) fromCoord = [parseFloat(fa[0]), parseFloat(fa[1])];
+  }
+  if (params.ta) {
+    var ta = params.ta.split(',');
+    if (ta.length === 2) toCoord = [parseFloat(ta[0]), parseFloat(ta[1])];
+  }
+
+  // Status
+  var statusMap = {'1': 'waiting', '2': 'matched', '3': 'active'};
+  var status = statusMap[params.st] || 'active';
+  var statusLabels = {waiting: '⏳ 匹配中', matched: '🤝 已配对', active: '🟢 行程中'};
+
+  // Populate UI
+  document.getElementById('h-title').textContent = params.f + ' → ' + params.t;
+  document.getElementById('h-time').textContent = params.tm || '';
+  document.getElementById('label-from').textContent = params.f;
+  document.getElementById('label-to').textContent = params.t;
+  document.getElementById('i-driver').textContent = params.d || '待分配';
+  document.getElementById('i-plate').textContent = params.p || '待分配';
+  document.getElementById('i-km').textContent = params.km || '-';
+  document.getElementById('i-min').textContent = params.min || '-';
+  document.getElementById('i-tm').textContent = params.tm || '-';
+  var stEl = document.getElementById('i-status');
+  stEl.textContent = statusLabels[status] || '🟢 行程中';
+  stEl.className = 'info-value status ' + status;
+
+  document.getElementById('markerFromLabel').textContent = params.f;
+  document.getElementById('markerToLabel').textContent = params.t;
+
+  // Draw map route
+  var mapSvg = document.getElementById('mapSvg');
+  var routePath = document.getElementById('routePath');
+  var routePathBg = document.getElementById('routePathBg');
+  var markerStart = document.getElementById('markerStart');
+  var markerEnd = document.getElementById('markerEnd');
+  var markerFromDiv = document.getElementById('markerFromDiv');
+  var markerToDiv = document.getElementById('markerToDiv');
+  var mapDistEl = document.getElementById('mapDist');
+  var mapCar = document.getElementById('mapCar');
+
+  // Use coords or generate based on route
+  var hasCoords = fromCoord && toCoord;
+
+  // Map SVG is 400x260 viewBox
+  // Position: start at bottom-left area, end at top-right area
+  var sx, sy, ex, ey;
+  var mx, my; // midpoint
+  var distText = params.km || '';
+
+  if (hasCoords) {
+    // Use real coords: map bounding box + padding
+    var latMin = Math.min(fromCoord[1], toCoord[1]) - 0.08;
+    var latMax = Math.max(fromCoord[1], toCoord[1]) + 0.08;
+    var lngMin = Math.min(fromCoord[0], toCoord[0]) - 0.08;
+    var lngMax = Math.max(fromCoord[0], toCoord[0]) + 0.08;
+    
+    var pad = 60;
+    function toSVG(lng, lat) {
+      return {
+        x: pad + ((lng - lngMin) / (lngMax - lngMin)) * (400 - pad * 2),
+        y: 260 - pad - ((lat - latMin) / (latMax - latMin)) * (260 - pad * 2)
+      };
+    }
+    var sp = toSVG(fromCoord[0], fromCoord[1]);
+    var ep = toSVG(toCoord[0], toCoord[1]);
+    sx = sp.x; sy = sp.y;
+    ex = ep.x; ey = ep.y;
+  } else {
+    // Default positions: start bottom-left, end top-right with some offset
+    sx = 70; sy = 200;
+    ex = 340; ey = 60;
+  }
+
+  mx = (sx + ex) / 2;
+  my = Math.min(sy, ey) - 50;
+
+  // Curved path
+  var cp1x = sx + (ex - sx) * 0.25;
+  var cp1y = sy + (my - sy) * 0.6;
+  var cp2x = sx + (ex - sx) * 0.75;
+  var cp2y = ey + (my - ey) * 0.6;
+  var pathD = 'M' + sx + ',' + sy + ' C' + cp1x + ',' + cp1y + ' ' + cp2x + ',' + cp2y + ' ' + ex + ',' + ey;
+
+  routePath.setAttribute('d', pathD);
+  routePathBg.setAttribute('d', pathD);
+  markerStart.setAttribute('cx', sx);
+  markerStart.setAttribute('cy', sy);
+  markerEnd.setAttribute('cx', ex);
+  markerEnd.setAttribute('cy', ey);
+
+  // Position HTML markers (percentage of map area)
+  var mapW = 400, mapH = 260;
+  markerFromDiv.style.left = (sx / mapW * 100) + '%';
+  markerFromDiv.style.top = (sy / mapH * 100) + '%';
+  markerToDiv.style.left = (ex / mapW * 100) + '%';
+  markerToDiv.style.top = (ey / mapH * 100) + '%';
+
+  // Distance label at midpoint
+  mapDistEl.style.left = (mx / mapW * 100) + '%';
+  mapDistEl.style.top = ((my + 10) / mapH * 100) + '%';
+  mapDistEl.textContent = distText;
+
+  // Car animation along the path
+  var carAnimFrame = 0;
+  var carAnimTotal = 600; // ~60s per round trip
+  var pathLength = 1000; // approximate
+  var carDir = 1;
+  var carTimer = null;
+
+  function pointOnCubicCurve(t, p0x, p0y, p1x, p1y, p2x, p2y, p3x, p3y) {
+    var u = 1 - t;
+    var tt = t * t;
+    var uu = u * u;
+    var uuu = uu * u;
+    var ttt = tt * t;
+    return {
+      x: uuu * p0x + 3 * uu * t * p1x + 3 * u * tt * p2x + ttt * p3x,
+      y: uuu * p0y + 3 * uu * t * p1y + 3 * u * tt * p2y + ttt * p3y
+    };
+  }
+
+  function startCarAnim() {
+    if (carTimer) return;
+    function step() {
+      carAnimFrame++;
+      if (carAnimFrame >= carAnimTotal) {
+        carAnimFrame = 0;
+        carDir = carDir === 1 ? -1 : 1;
+      }
+      var t = carDir === 1 
+        ? carAnimFrame / carAnimTotal 
+        : 1 - carAnimFrame / carAnimTotal;
+      var pt = pointOnCubicCurve(t, sx, sy, cp1x, cp1y, cp2x, cp2y, ex, ey);
+      mapCar.style.left = (pt.x / mapW * 100) + '%';
+      mapCar.style.top = (pt.y / mapH * 100) + '%';
+      carTimer = requestAnimationFrame(step);
+    }
+    carTimer = requestAnimationFrame(step);
+  }
+
+  function stopCarAnim() {
+    if (carTimer) { cancelAnimationFrame(carTimer); carTimer = null; }
+  }
+
+  // UI 已由 CSS (html.share-loaded) 控制显示，无需手动切换
+  // 确保 html 类正确（防极端情况）
+  document.documentElement.className = 'share-loaded';
+
+  // Start animation after a short delay to let layout settle
+  setTimeout(startCarAnim, 500);
+
+  // Pause animation when page not visible
+  document.addEventListener('visibilitychange', function() {
+    if (document.hidden) {
+      stopCarAnim();
+    } else {
+      startCarAnim();
+    }
+  });
+
+})();
+</script>
+</body>
+</html>
