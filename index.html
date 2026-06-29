@@ -5,8 +5,8 @@
 <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0">
 <meta name="theme-color" content="#1a5fa8">
 <title>民兰校途 · 校园城际出行</title>
-<!-- 高德地图 JS API 2.0 -->
-<script src="https://webapi.amap.com/maps?v=2.0&key=8c0f665e55176cd54f247f92726d1e04&plugin=AMap.Driving"></script>
+<!-- 高德地图 JS API 1.4.15（不需要安全密钥） -->
+<script src="https://webapi.amap.com/maps?v=1.4.15&key=8c0f665e55176cd54f247f92726d1e04&plugin=AMap.Driving"></script>
 <!-- Leaflet + OpenStreetMap（分享追踪页使用，无需API key） -->
 <link rel="stylesheet" href="https://cdn.bootcdn.net/ajax/libs/leaflet/1.9.4/leaflet.css" />
 <script defer src="https://cdn.bootcdn.net/ajax/libs/leaflet/1.9.4/leaflet.js" onerror="(function(){var s=document.createElement('script');s.src='https://unpkg.com/leaflet@1.9.4/dist/leaflet.js';document.head.appendChild(s);})()"></script>
@@ -7616,9 +7616,10 @@ function _initLeafletMap(container) {
       attributionControl: false,
     });
 
-    L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
-      maxZoom: 19,
-      attribution: '&copy; OpenStreetMap contributors',
+    L.tileLayer('https://webrd0{s}.is.autonavi.com/appmaptile?lang=zh_cn&size=1&scale=1&style=8&x={x}&y={y}&z={z}', {
+      subdomains: ['1', '2', '3', '4'],
+      maxZoom: 18,
+      attribution: '© 高德地图',
     }).addTo(trackMap);
 
     L.control.zoom({ position: 'bottomright' }).addTo(trackMap);
@@ -8080,9 +8081,10 @@ function _initBookMapLeaflet(container) {
       attributionControl: false,
     });
 
-    L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
-      maxZoom: 19,
-      attribution: '&copy; OpenStreetMap contributors',
+    L.tileLayer('https://webrd0{s}.is.autonavi.com/appmaptile?lang=zh_cn&size=1&scale=1&style=8&x={x}&y={y}&z={z}', {
+      subdomains: ['1', '2', '3', '4'],
+      maxZoom: 18,
+      attribution: '© 高德地图',
     }).addTo(bookMap);
 
     L.control.zoom({ position: 'bottomright' }).addTo(bookMap);
